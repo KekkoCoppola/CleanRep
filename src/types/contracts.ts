@@ -1,0 +1,67 @@
+/**
+ * Contratti dati di CleanRep.
+ *
+ * PoseSnapshot ed EvaluationResult sono il confine stabile dell'app:
+ * oggi li consuma il rule engine locale, domani potrebbero viaggiare
+ * verso un backend (vedi docs/future-claude-integration.md) senza modifiche.
+ */
+
+/** Punto MediaPipe normalizzato: x,y in [0,1] (y cresce verso il basso), z profondità relativa alle anche. */
+export interface LandmarkPoint {
+  x: number;
+  y: number;
+  z: number;
+  visibility: number;
+}
+
+export type JointName =
+  | 'NOSE'
+  | 'LEFT_EAR'
+  | 'RIGHT_EAR'
+  | 'LEFT_SHOULDER'
+  | 'RIGHT_SHOULDER'
+  | 'LEFT_ELBOW'
+  | 'RIGHT_ELBOW'
+  | 'LEFT_WRIST'
+  | 'RIGHT_WRIST'
+  | 'LEFT_HIP'
+  | 'RIGHT_HIP'
+  | 'LEFT_KNEE'
+  | 'RIGHT_KNEE'
+  | 'LEFT_ANKLE'
+  | 'RIGHT_ANKLE';
+
+export type ExerciseType = 'PLANK';
+
+export interface ComputedAngles {
+  /** Angolo spalla–anca–caviglia, media sx/dx (gradi). 180 = corpo perfettamente in linea. */
+  bodyLine: number;
+  leftHipAngle: number;
+  rightHipAngle: number;
+  leftKneeAngle: number;
+  rightKneeAngle: number;
+}
+
+export interface PoseSnapshot {
+  exercise: ExerciseType;
+  /** Epoch ms del frame. */
+  timestamp: number;
+  fps: number;
+  landmarks: Partial<Record<JointName, LandmarkPoint>>;
+  /** Pre-calcolati sul client; se assenti, l'evaluator li calcola dai landmark. */
+  computedAngles?: ComputedAngles;
+}
+
+export interface EvaluationResult {
+  isCorrect: boolean;
+  /** 1–10 (0 riservato a "posa non rilevabile"). */
+  overallScore: number;
+  jointsToColorRed: JointName[];
+  /** Frase italiana, massimo 8 parole, pronunciabile via TTS. */
+  audioFeedback: string;
+}
+
+/** Interfaccia del motore di valutazione: il rule engine locale la implementa oggi, un eventuale valutatore remoto (Claude) domani. */
+export interface Evaluator {
+  evaluate(snapshot: PoseSnapshot): EvaluationResult;
+}

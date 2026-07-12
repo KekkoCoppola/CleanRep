@@ -1,0 +1,22 @@
+# Dipendenze
+node_modules/
+
+# Build
+dist/
+
+# Log e cache
+*.log
+.vite/
+
+# Config locale di Claude Code (contiene percorsi assoluti di questa macchina)
+.claude/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Ambiente (per l'eventuale backend futuro: mai committare API key)
+.env
+.env.*

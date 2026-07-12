@@ -1,0 +1,20 @@
+{
+  "exercise": "PLANK",
+  "timestamp": 1752307200000,
+  "fps": 30,
+  "landmarks": {
+    "NOSE":           { "x": 0.26, "y": 0.44, "z": -0.02, "visibility": 0.99 },
+    "LEFT_SHOULDER":  { "x": 0.32, "y": 0.48, "z": -0.12, "visibility": 0.99 },
+    "RIGHT_SHOULDER": { "x": 0.34, "y": 0.50, "z":  0.08, "visibility": 0.97 },
+    "LEFT_ELBOW":     { "x": 0.30, "y": 0.62, "z": -0.10, "visibility": 0.98 },
+    "RIGHT_ELBOW":    { "x": 0.33, "y": 0.63, "z":  0.09, "visibility": 0.95 },
+    "LEFT_WRIST":     { "x": 0.24, "y": 0.64, "z": -0.09, "visibility": 0.96 },
+    "RIGHT_WRIST":    { "x": 0.27, "y": 0.65, "z":  0.08, "visibility": 0.93 },
+    "LEFT_HIP":       { "x": 0.52, "y": 0.55, "z": -0.05, "visibility": 0.99 },
+    "RIGHT_HIP":      { "x": 0.53, "y": 0.56, "z":  0.05, "visibility": 0.98 },
+    "LEFT_KNEE":      { "x": 0.68, "y": 0.60, "z": -0.04, "visibility": 0.96 },
+    "RIGHT_KNEE":     { "x": 0.69, "y": 0.61, "z":  0.04, "visibility": 0.94 },
+    "LEFT_ANKLE":     { "x": 0.82, "y": 0.66, "z": -0.03, "visibility": 0.93 },
+    "RIGHT_ANKLE":    { "x": 0.83, "y": 0.67, "z":  0.03, "visibility": 0.91 }
+  }
+}
