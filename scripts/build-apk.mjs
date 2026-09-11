@@ -16,6 +16,9 @@ if (!existsSync(androidDir)) {
 const isWindows = process.platform === 'win32';
 const gradle = join(androidDir, isWindows ? 'gradlew.bat' : 'gradlew');
 const task = process.argv[2] ?? 'assembleDebug';
-const result = spawnSync(gradle, [task], { cwd: androidDir, stdio: 'inherit', shell: isWindows });
+// Su Windows gradlew.bat richiede la shell: si passa un'unica stringa già quotata.
+const result = isWindows
+  ? spawnSync(`"${gradle}" ${task}`, { cwd: androidDir, stdio: 'inherit', shell: true })
+  : spawnSync(gradle, [task], { cwd: androidDir, stdio: 'inherit' });
 if (result.status !== 0) process.exit(result.status ?? 1);
 console.log(`[build-apk] OK: ${join(androidDir, 'app', 'build', 'outputs', 'apk', 'debug', 'app-debug.apk')}`);
