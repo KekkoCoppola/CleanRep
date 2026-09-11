@@ -64,7 +64,7 @@ export default function VideoAnalysisView({ file, exercise, detector, sex, onDon
         <canvas ref={canvasRef} className="stage-canvas" />
       </div>
       <div className="progress" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent ?? 0}>
-        <div className="progress-bar" style={{ width: `${percent ?? 0}%` }} />
+        <div className="progress-bar" style={{ transform: `scaleX(${(percent ?? 0) / 100})` }} />
       </div>
       <div className="hint">
         {progress

@@ -157,8 +157,10 @@ body {
 
 .progress-bar {
   height: 100%;
+  width: 100%;
   background: var(--green);
-  transition: width 0.15s linear;
+  transform-origin: left center;
+  transition: transform 0.15s linear;
 }
 
 .stats {
@@ -205,8 +207,9 @@ body {
 }
 
 .report-item {
-  padding-left: 10px;
-  border-left: 3px solid var(--red);
+  background: rgba(239, 68, 68, 0.08);
+  border-radius: 8px;
+  padding: 8px 10px;
 }
 
 .gallery {
