@@ -23,3 +23,6 @@ Thumbs.db
 # Ambiente (per l'eventuale backend futuro: mai committare API key)
 .env
 .env.*
+
+# APK copiato da build-apk.bat
+apk/
