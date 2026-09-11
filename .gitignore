@@ -4,6 +4,9 @@ node_modules/
 # Build
 dist/
 
+# Asset MediaPipe locali (generati da scripts/fetch-models.mjs)
+public/mediapipe/
+
 # Log e cache
 *.log
 .vite/
@@ -20,3 +23,6 @@ Thumbs.db
 # Ambiente (per l'eventuale backend futuro: mai committare API key)
 .env
 .env.*
+
+# APK copiato da build-apk.bat
+apk/

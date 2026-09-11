@@ -1,0 +1,23 @@
+{
+  // Confine del core: logica pura (tracking, esercizi, coach) SENZA DOM.
+  // Se un file del core usa window/document/HTMLElement il typecheck fallisce:
+  // è ciò che permette di riusarlo invariato in WebView, test e futuri runtime nativi.
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020"],
+    "types": [],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src/core", "src/exercises", "src/types", "src/dev/synthetic.ts"]
+}
