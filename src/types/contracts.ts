@@ -29,9 +29,27 @@ export type JointName =
   | 'LEFT_KNEE'
   | 'RIGHT_KNEE'
   | 'LEFT_ANKLE'
-  | 'RIGHT_ANKLE';
+  | 'RIGHT_ANKLE'
+  | 'LEFT_HEEL'
+  | 'RIGHT_HEEL'
+  | 'LEFT_FOOT_INDEX'
+  | 'RIGHT_FOOT_INDEX';
+
+export type Side = 'LEFT' | 'RIGHT';
 
 export type ExerciseType = 'PLANK';
+
+/** Fasi di una sessione di esercizio statico (hold). */
+export type SessionPhase = 'NO_SUBJECT' | 'SETUP' | 'HOLDING' | 'PAUSED';
+
+export type IssueSeverity = 'high' | 'medium' | 'low';
+
+/** Una regola biomeccanica violata in questo momento. */
+export interface EvaluationIssue {
+  id: string;
+  severity: IssueSeverity;
+  joints: JointName[];
+}
 
 export interface ComputedAngles {
   /** Angolo spalla–anca–caviglia, media sx/dx (gradi). 180 = corpo perfettamente in linea. */
