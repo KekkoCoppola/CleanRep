@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">CleanRep</string>
+    <string name="title_activity_main">CleanRep</string>
+    <string name="package_name">com.cleanrep.app</string>
+    <string name="custom_url_scheme">com.cleanrep.app</string>
+</resources>

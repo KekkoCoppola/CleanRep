@@ -10,14 +10,22 @@
     "preview": "vite preview",
     "test": "vitest run",
     "fetch-models": "node scripts/fetch-models.mjs",
+    "android:sync": "npm run build && cap sync android",
+    "android:apk": "npm run android:sync && node scripts/build-apk.mjs",
+    "android:open": "cap open android",
     "postinstall": "node scripts/fetch-models.mjs"
   },
   "dependencies": {
+    "@capacitor-community/keep-awake": "^5.0.1",
+    "@capacitor-community/text-to-speech": "^5.1.0",
+    "@capacitor/android": "^6.2.2",
+    "@capacitor/core": "^6.2.2",
     "@mediapipe/tasks-vision": "^0.10.21",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@capacitor/cli": "^6.2.2",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",

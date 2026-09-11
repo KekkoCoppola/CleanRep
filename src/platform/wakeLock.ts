@@ -1,6 +1,10 @@
+import { KeepAwake } from '@capacitor-community/keep-awake';
+import { Capacitor } from '@capacitor/core';
+
 /**
- * Tiene lo schermo acceso durante l'allenamento (Screen Wake Lock API).
- * Il lock si perde quando la pagina va in background: lo si riprende al ritorno.
+ * Tiene lo schermo acceso durante l'allenamento: plugin nativo nell'APK,
+ * Screen Wake Lock API nel browser (il lock si perde in background e lo si
+ * riprende al ritorno).
  */
 export class ScreenWakeLock {
   private sentinel: WakeLockSentinel | null = null;
@@ -11,12 +15,20 @@ export class ScreenWakeLock {
 
   async enable(): Promise<void> {
     this.active = true;
+    if (Capacitor.isNativePlatform()) {
+      await KeepAwake.keepAwake().catch(() => undefined);
+      return;
+    }
     document.addEventListener('visibilitychange', this.onVisibility);
     await this.acquire();
   }
 
   disable(): void {
     this.active = false;
+    if (Capacitor.isNativePlatform()) {
+      void KeepAwake.allowSleep().catch(() => undefined);
+      return;
+    }
     document.removeEventListener('visibilitychange', this.onVisibility);
     void this.sentinel?.release().catch(() => undefined);
     this.sentinel = null;

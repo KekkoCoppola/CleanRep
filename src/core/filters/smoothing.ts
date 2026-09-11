@@ -1,42 +1,4 @@
-import type { ComputedAngles, EvaluationResult } from '../../types/contracts';
-
-/** Media mobile esponenziale per una singola serie di valori. */
-export class Ema {
-  private value: number | undefined;
-  constructor(private readonly alpha = 0.3) {}
-
-  push(sample: number): number {
-    this.value = this.value === undefined ? sample : this.alpha * sample + (1 - this.alpha) * this.value;
-    return this.value;
-  }
-
-  reset(): void {
-    this.value = undefined;
-  }
-}
-
-/** EMA applicata campo per campo agli angoli del plank (anti-jitter dei landmark). */
-export class AngleSmoother {
-  private emas = new Map<keyof ComputedAngles, Ema>();
-  constructor(private readonly alpha = 0.3) {}
-
-  push(angles: ComputedAngles): ComputedAngles {
-    const out = {} as ComputedAngles;
-    for (const key of Object.keys(angles) as Array<keyof ComputedAngles>) {
-      let ema = this.emas.get(key);
-      if (!ema) {
-        ema = new Ema(this.alpha);
-        this.emas.set(key, ema);
-      }
-      out[key] = ema.push(angles[key]);
-    }
-    return out;
-  }
-
-  reset(): void {
-    this.emas.clear();
-  }
-}
+import type { EvaluationResult } from '../../types/contracts';
 
 function signature(r: EvaluationResult): string {
   return `${r.isCorrect}|${r.overallScore === 0 ? 'nopose' : 'pose'}|${r.jointsToColorRed.join(',')}`;
