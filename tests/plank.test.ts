@@ -151,9 +151,40 @@ describe('Plank: regole', () => {
     expect(last(out).state.result.issues.map((i) => i.id)).toEqual(['handsUnderShoulders']);
   });
 
-  it('testa che cade', () => {
+  it('testa che cade: difetto tollerabile', () => {
     const out = session([{ durationMs: 5000, body: { ...forearm, headDrop: 0.06 } }]);
-    expect(last(out).state.result.issues.map((i) => i.id)).toEqual(['headAlignment']);
+    const issues = last(out).state.result.issues;
+    expect(issues.map((i) => i.id)).toEqual(['headDrop']);
+    expect(issues[0].level).toBe('tolerable');
+  });
+
+  it('collo in iperestensione (sguardo in avanti): deviazione critica', () => {
+    const out = session([
+      {
+        durationMs: 4000,
+        body: forearm,
+        // Naso all'altezza dell'orecchio e davanti: sguardo all'orizzonte.
+        mutate: (pose) => {
+          const ear = pose.landmarks[7];
+          pose.landmarks[0] = { ...pose.landmarks[0], x: ear.x - 0.04, y: ear.y - 0.005 };
+          return pose;
+        },
+      },
+    ]);
+    const issue = last(out).state.result.issues.find((i) => i.id === 'headUp');
+    expect(issue?.level).toBe('critical');
+  });
+
+  it('misure in cm: bacino a 10 cm sotto l’asse è critico, a 4 cm è tollerabile', () => {
+    const critical = session([{ durationMs: 3000, body: { ...forearm, hipOffset: 0.05 } }]);
+    const tolerable = session([{ durationMs: 3000, body: { ...forearm, hipOffset: 0.02 } }]);
+    const c = last(critical).state.result.issues.find((i) => i.id === 'hipSag')!;
+    const t = last(tolerable).state.result.issues.find((i) => i.id === 'hipSag')!;
+    expect(c.level).toBe('critical');
+    expect(c.value).toBeGreaterThan(8);
+    expect(t.level).toBe('tolerable');
+    expect(t.value).toBeGreaterThan(3.5);
+    expect(t.value).toBeLessThan(5);
   });
 });
 

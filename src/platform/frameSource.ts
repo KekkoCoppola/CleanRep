@@ -42,7 +42,7 @@ class FpsMeter {
 }
 
 /** Luminosità media del frame (0–1), campionata una volta al secondo su un canvas 32×24. */
-class BrightnessProbe {
+export class BrightnessProbe {
   private readonly ctx: CanvasRenderingContext2D | null;
   private value: number | undefined;
   private lastT = -Infinity;

@@ -44,11 +44,20 @@ export type SessionPhase = 'NO_SUBJECT' | 'SETUP' | 'HOLDING' | 'PAUSED';
 
 export type IssueSeverity = 'high' | 'medium' | 'low';
 
+/**
+ * Livello della deviazione (rubrica di valutazione del plank):
+ * tollerabile = richiamo verbale, critica = cedimento tecnico.
+ */
+export type DeviationLevel = 'tolerable' | 'critical';
+
 /** Una regola biomeccanica violata in questo momento. */
 export interface EvaluationIssue {
   id: string;
   severity: IssueSeverity;
   joints: JointName[];
+  level?: DeviationLevel;
+  /** Misura della deviazione nell'unità della regola (cm, gradi). */
+  value?: number;
 }
 
 export interface ComputedAngles {

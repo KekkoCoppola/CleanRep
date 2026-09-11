@@ -9,6 +9,8 @@ export interface PipelineOutput {
   state: HoldSessionState;
   /** Frase da pronunciare ora (null = silenzio). */
   utterance: Utterance | null;
+  /** Metri per unità isotropa (0 = non stimata): per misure in cm nei report. */
+  metersPerUnit: number;
 }
 
 /**
@@ -29,9 +31,9 @@ export class TrainingPipeline {
 
   process(frame: RawPoseFrame, speaking = false): PipelineOutput {
     const pose = this.stabilizer.process(frame);
-    const state = this.session.update(pose, this.stabilizer.torsoLength);
+    const state = this.session.update(pose, this.stabilizer.torsoLength, this.stabilizer.metersPerUnit);
     const utterance = this.coach.update(pose.timestamp, state, pose.quality, speaking);
-    return { pose, state, utterance };
+    return { pose, state, utterance, metersPerUnit: this.stabilizer.metersPerUnit };
   }
 
   reset(): void {

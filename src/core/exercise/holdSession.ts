@@ -82,12 +82,12 @@ export class HoldSession {
     this.colors = new StateDebouncer(config.colorDebounceMs);
   }
 
-  update(pose: StablePose, torso: number): HoldSessionState {
+  update(pose: StablePose, torso: number, metersPerUnit?: number): HoldSessionState {
     const t = pose.timestamp;
     const dt = this.lastT === null ? 0 : Math.min(Math.max(t - this.lastT, 0), 250);
     this.lastT = t;
 
-    let ctx = createContext(pose, this.variant, torso);
+    let ctx = createContext(pose, this.variant, torso, metersPerUnit);
     const present = pose.subjectId !== null && !pose.quality.issues.includes('NO_PERSON');
     const inPosition = present && !pose.quality.blocking && this.def.isInPosition(ctx);
     const absentMs = this.absent.update(!present, t);
@@ -111,7 +111,7 @@ export class HoldSession {
       if (inPosition) {
         if (this.def.detectVariant) {
           this.variant = this.def.detectVariant(ctx, this.variant);
-          ctx = createContext(pose, this.variant, torso);
+          ctx = createContext(pose, this.variant, torso, metersPerUnit);
         }
         this.evaluateRules(ctx, t);
       }
@@ -122,7 +122,10 @@ export class HoldSession {
       this.skipped = [];
     }
 
-    const penalty = this.issues.reduce((s, i) => s + (this.def.rules.find((r) => r.id === i.id)?.penalty ?? 0), 0);
+    const penalty = this.issues.reduce((s, i) => {
+      const full = this.def.rules.find((r) => r.id === i.id)?.penalty ?? 0;
+      return s + (i.level === 'tolerable' ? Math.ceil(full / 2) : full);
+    }, 0);
     const isCorrect = holding && this.issues.length === 0;
     if (isCorrect) this.correctMs += dt;
     const applicable = holding ? this.applicableRules().length : 0;
@@ -136,7 +139,7 @@ export class HoldSession {
       phase: this.phase,
       variant: holding ? this.variant : undefined,
       confidence: pose.quality.score * evaluatedShare,
-      issues: this.issues.map(({ id, severity, joints }) => ({ id, severity, joints })),
+      issues: this.issues.map(({ id, severity, joints, level, value }) => ({ id, severity, joints, level, value })),
     };
     const committed = this.colors.push(raw, t);
 
@@ -182,7 +185,15 @@ export class HoldSession {
       if (res.status === 'violated') {
         const since = this.violatedSince.get(rule.id) ?? t;
         this.violatedSince.set(rule.id, since);
-        issues.push({ id: rule.id, severity: rule.severity, joints: res.joints ?? [], priority: rule.priority, since });
+        issues.push({
+          id: rule.id,
+          severity: rule.severity,
+          joints: res.joints ?? [],
+          level: res.level ?? 'critical',
+          value: res.value,
+          priority: rule.priority,
+          since,
+        });
       } else {
         this.violatedSince.delete(rule.id);
         if (res.status === 'skipped') skipped.push(rule.id);

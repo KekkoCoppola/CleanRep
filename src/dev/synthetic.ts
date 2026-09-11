@@ -97,7 +97,8 @@ export function syntheticJoints(p: BodyParams): Partial<Record<string, Pt>> {
   const bodyDir = { x: j.SHOULDER.x - j.HIP.x, y: j.SHOULDER.y - j.HIP.y };
   const bl = Math.hypot(bodyDir.x, bodyDir.y) || 1;
   j.EAR = pt(j.SHOULDER.x + (bodyDir.x / bl) * 0.07 * s, j.SHOULDER.y + (bodyDir.y / bl) * 0.07 * s + (p.headDrop ?? 0));
-  j.NOSE = pt(j.EAR.x + dir * 0.03 * s, j.EAR.y + 0.01 * s);
+  // Sguardo al pavimento (collo neutro): il naso sta sotto e poco avanti rispetto all'orecchio.
+  j.NOSE = pt(j.EAR.x + dir * 0.015 * s, j.EAR.y + 0.03 * s);
   return j;
 }
 

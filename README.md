@@ -29,6 +29,26 @@ fotocamera ─▶ MediaPipe Pose (2 pose, 33 landmark) ─▶ RawPoseFrame
 - **Regole normalizzate sul corpo e sulla gravità**, con isteresi. Valgono a qualsiasi distanza, con qualsiasi proporzione del frame e con la camera inclinata: la gravità arriva dall'accelerometro.
 - **Voce.** Dice una correzione alla volta e solo se l'errore dura. Tra una frase e l'altra lascia una pausa minima, e fa i complimenti quando correggi.
 
+## Analisi di un video
+
+Dalla home, **"Analizza un video"**: carichi un video del plank ripreso di lato. Passa dalla stessa pipeline del live, a ~10 frame analizzati per secondo di video, e l'app restituisce:
+
+- un **testo breve** con il tempo valido fino al cedimento tecnico, il livello rispetto ai valori normativi, cosa migliorare (con misura, istante e consiglio), cosa va bene e cosa non si può giudicare dal video;
+- gli **screenshot** dei momenti peggiori di ogni difetto: scheletro dell'app, punti da correggere in rosso e cerchiati, asse ideale tratteggiato, didascalia con difetto, istante e misura;
+- **"Condividi report"**: un unico file HTML con testo e immagini (foglio di condivisione Android nell'APK, condivisione di sistema o download nel browser).
+
+La valutazione segue la rubrica *Valutazione biomeccanica e metodologia di giudizio tecnico del plank*:
+
+- tre livelli: ottimale, difetto tollerabile, deviazione critica;
+- asse orecchio–spalla–anca–ginocchio–caviglia;
+- bacino fuori asse: tollerabile sotto i 5 cm, critico sopra;
+- protocollo del test:
+  - alla prima deviazione evidente c'è un richiamo e 3 s per ripristinare;
+  - la seconda deviazione o il collasso chiudono il test;
+  - un difetto lieve non corretto entro 3 s conta come deviazione.
+
+Le soglie sono in `src/exercises/plank/definition.ts` (`PLANK_THRESHOLDS`), il protocollo e il testo in `src/core/analysis/holdReport.ts`.
+
 ## Avvio (web)
 
 ```bash

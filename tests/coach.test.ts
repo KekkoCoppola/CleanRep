@@ -28,8 +28,14 @@ function state(phase: SessionPhase, issues: ActiveIssue[] = [], holdMs = 5000): 
   };
 }
 
-function issue(id: string, since: number, severity: ActiveIssue['severity'] = 'high', priority = 1): ActiveIssue {
-  return { id, severity, joints: [], priority, since };
+function issue(
+  id: string,
+  since: number,
+  severity: ActiveIssue['severity'] = 'high',
+  priority = 1,
+  level: ActiveIssue['level'] = 'tolerable',
+): ActiveIssue {
+  return { id, severity, joints: [], priority, since, level };
 }
 
 /** Simula `ms` di tempo a 10Hz con uno stato fisso; ritorna le frasi dette. */
@@ -56,17 +62,25 @@ function holdingCoach(): Coach {
 }
 
 describe('Coach', () => {
-  it('un errore che dura meno di 1.5s non viene mai detto', () => {
+  it('un difetto tollerabile che dura meno di 2s non viene mai detto', () => {
     const coach = holdingCoach();
-    const said = tick(coach, 4000, 1400, () => state('HOLDING', [issue('hipSag', 4000)]));
+    const said = tick(coach, 4000, 1900, () => state('HOLDING', [issue('hipSag', 4000)]));
     expect(said).toEqual([]);
   });
 
-  it('un errore persistente viene detto dopo 1.5s e non ripetuto prima di 10s', () => {
+  it('una deviazione critica viene richiamata subito (protocollo: avviso alla prima deviazione evidente)', () => {
     const coach = holdingCoach();
-    const said = tick(coach, 4000, 12000, () => state('HOLDING', [issue('hipSag', 4000)]));
+    const said = tick(coach, 4000, 1500, () => state('HOLDING', [issue('hipSag', 4000, 'high', 1, 'critical')]));
+    expect(said.map((s) => s.key)).toEqual(['issue:hipSag']);
+    expect(said[0].t).toBeGreaterThanOrEqual(4800);
+    expect(said[0].t).toBeLessThan(5000);
+  });
+
+  it('un errore persistente viene detto dopo 2s e non ripetuto prima di 10s', () => {
+    const coach = holdingCoach();
+    const said = tick(coach, 4000, 13000, () => state('HOLDING', [issue('hipSag', 4000)]));
     expect(said.map((s) => s.key)).toEqual(['issue:hipSag', 'issue:hipSag']);
-    expect(said[0].t).toBeGreaterThanOrEqual(5500);
+    expect(said[0].t).toBeGreaterThanOrEqual(6000);
     expect(said[1].t - said[0].t).toBeGreaterThanOrEqual(10000);
     // Formulazioni alternate.
     expect(said[0].text).not.toBe(said[1].text);
@@ -102,8 +116,8 @@ describe('Coach', () => {
   it('complimento quando l’errore detto viene corretto', () => {
     const coach = holdingCoach();
     const said = [
-      ...tick(coach, 4000, 2000, () => state('HOLDING', [issue('hipSag', 4000)])),
-      ...tick(coach, 6000, 6000, () => state('HOLDING')),
+      ...tick(coach, 4000, 2500, () => state('HOLDING', [issue('hipSag', 4000)])),
+      ...tick(coach, 6500, 6000, () => state('HOLDING')),
     ];
     expect(said.map((s) => s.key)).toEqual(['issue:hipSag', 'praise']);
   });

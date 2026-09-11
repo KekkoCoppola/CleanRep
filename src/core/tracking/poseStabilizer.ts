@@ -66,6 +66,7 @@ export class PoseStabilizer {
   private readonly bones = new BoneLengthMonitor();
   private tracks = new Map<JointName, JointTrack>();
   private torso = 0;
+  private mpu = 0;
   private nearSide: Side | null = null;
   private nearCandidate: { side: Side; since: number } | null = null;
 
@@ -76,6 +77,14 @@ export class PoseStabilizer {
   /** Lunghezza corrente del torso (isotropa) usata per normalizzare le soglie. */
   get torsoLength(): number {
     return this.torso > 0 ? this.torso : FALLBACK_TORSO;
+  }
+
+  /**
+   * Metri per unità isotropa (torso in metri dai landmark mondo / torso nel frame).
+   * 0 se non ancora stimabile: il contesto userà un torso medio di 0.5 m.
+   */
+  get metersPerUnit(): number {
+    return this.mpu;
   }
 
   process(frame: RawPoseFrame): StablePose {
@@ -96,7 +105,7 @@ export class PoseStabilizer {
       const world = selection.candidate.world ? { ...selection.candidate.world } : null;
       swaps = correctSideSwaps(raw, world, this.previousPositions(), aspect, this.torsoLength);
       const anomalous = new Set(this.bones.check(world));
-      this.updateTorso(raw, aspect);
+      this.updateTorso(raw, world, aspect);
       for (const name of JOINT_NAMES) {
         this.updateJoint(name, raw[name], anomalous.has(name), t, aspect, rejected);
       }
@@ -155,6 +164,7 @@ export class PoseStabilizer {
     this.tracks.clear();
     this.bones.reset();
     this.torso = 0;
+    this.mpu = 0;
     this.nearSide = null;
     this.nearCandidate = null;
   }
@@ -167,16 +177,26 @@ export class PoseStabilizer {
     return out;
   }
 
-  private updateTorso(raw: JointMap, aspect: number): void {
+  private updateTorso(raw: JointMap, world: JointMap | null, aspect: number): void {
     const lengths: number[] = [];
+    const meters: number[] = [];
     for (const side of ['LEFT', 'RIGHT']) {
       const s = raw[`${side}_SHOULDER` as JointName];
       const h = raw[`${side}_HIP` as JointName];
       if (s && h && s.visibility >= 0.5 && h.visibility >= 0.5) lengths.push(dist(toIso(s, aspect), toIso(h, aspect)));
+      const ws = world?.[`${side}_SHOULDER` as JointName];
+      const wh = world?.[`${side}_HIP` as JointName];
+      if (ws && wh && ws.visibility >= 0.5 && wh.visibility >= 0.5) {
+        meters.push(Math.hypot(ws.x - wh.x, ws.y - wh.y, ws.z - wh.z));
+      }
     }
     if (!lengths.length) return;
     const d = lengths.reduce((a, b) => a + b, 0) / lengths.length;
     this.torso = this.torso > 0 ? 0.9 * this.torso + 0.1 * d : d;
+    if (meters.length && d > 0) {
+      const mpu = meters.reduce((a, b) => a + b, 0) / meters.length / d;
+      this.mpu = this.mpu > 0 ? 0.95 * this.mpu + 0.05 * mpu : mpu;
+    }
   }
 
   private track(name: JointName): JointTrack {

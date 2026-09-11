@@ -71,15 +71,30 @@ Contiene anche `subjectId`, `nearSide` (il lato verso la camera), `quality { sco
 
 Le misure sono normalizzate sul corpo e riferite alla gravità. Le coppie entra/esce sono soglie di isteresi. Se i giunti richiesti non sono affidabili, la regola viene **saltata** e non conta come violata.
 
-| Regola | Misura | Entra / esce | Priorità | Penalità |
-|---|---|---|---|---|
-| In posizione | asse spalle→caviglie ≤ 40° dal pavimento, busto ≤ 50°, braccio che scende verso il pavimento | — | — | — |
-| `hipSag` | anca sotto la retta spalla–caviglia / lunghezza spalla–caviglia | 0.05 / 0.035 | 1 | −4 |
-| `hipPike` | anca sopra la retta | 0.07 / 0.05 | 1 | −4 |
-| `kneesBent` | angolo anca–ginocchio–caviglia | < 155° / > 162° | 2 | −2 |
-| `elbowsUnderShoulders` (avambracci) | braccio spalla→gomito dalla verticale | > 30° / < 22° | 3 | −2 |
-| `handsUnderShoulders` (braccia tese) | spalla→polso dalla verticale | > 30° / < 22° | 3 | −2 |
-| `headAlignment` | orecchio fuori linea col busto | > 35° / < 25° | 4 (bassa) | −1 |
+Le soglie seguono la rubrica *Valutazione biomeccanica e metodologia di giudizio tecnico del plank*: ogni regola restituisce `level` (`tolerable` = richiamo verbale, `critical` = cedimento tecnico) e `value` (cm o gradi). Le distanze in cm usano la scala dei landmark mondo MediaPipe.
+
+| Regola | Misura | Tollerabile entra / esce | Critico | Priorità | Penalità |
+|---|---|---|---|---|---|
+| In posizione | asse spalle→caviglie ≤ 40° dal pavimento, busto ≤ 50°, braccio che scende verso il pavimento | — | — | — | — |
+| `hipSag` | anca sotto la retta spalla–caviglia (cm) | 3.5 / 2.5 cm | ≥ 5 cm | 1 | −4 |
+| `hipPike` | anca sopra la retta (cm) | 3.5 / 2.5 cm | ≥ 5 cm | 1 | −4 |
+| `kneesBent` | flessione del ginocchio (180° − angolo) | 12° / 8° | ≥ 20° | 2 | −2 |
+| `elbowsUnderShoulders` (avambracci) | braccio spalla→gomito dalla verticale | 15° / 10° | ≥ 30° | 3 | −2 |
+| `handsUnderShoulders` (braccia tese) | spalla→polso dalla verticale | 20° / 14° | ≥ 30° | 3 | −2 |
+| `headUp` | sguardo (orecchio→naso) dalla verticale: iperestensione | 50° / 40° | ≥ 70° | 4 | −1 |
+| `headDrop` | orecchio sotto il prolungamento del busto | 20° / 14° | — | 5 (bassa) | −1 |
+
+Deviazione tollerabile = metà della penalità.
+
+**Protocollo del test** ([`src/core/analysis/holdReport.ts`](../src/core/analysis/holdReport.ts)):
+
+- Il cronometro parte quando il corpo è in posizione e stabile.
+- Deviazione = difetto critico per ≥ 0.5 s, oppure difetto tollerabile non corretto entro 3 s. Alla prima deviazione scatta il richiamo.
+- Il test termina se la deviazione non viene ripristinata entro 3 s, alla seconda deviazione, o quando il corpo esce dalla posizione (collasso).
+- Il tempo registrato è il "tempo valido fino al cedimento tecnico" e viene confrontato con le fasce normative:
+  - uomini < 77 / 77–106 / 107–128 / > 128.5 s;
+  - donne < 63 / 63–90 / 91–121 / > 121 s.
+- Metriche sull'intero video: piedi che scivolano (aumento della distanza gomiti–caviglie ≥ 6 cm) e oscillazioni del bacino (≥ 1.5 cm).
 
 Variante: angolo del gomito > 145° = braccia tese, < 120° = avambracci; nella fascia intermedia si tiene la variante precedente.
 

@@ -13,7 +13,11 @@ export interface Utterance {
 }
 
 export interface CoachConfig {
-  /** Un errore viene detto solo se persiste almeno così (ms). */
+  /**
+   * Un errore viene detto solo se persiste almeno così (ms). Protocollo del test:
+   * la deviazione evidente (critica) va richiamata subito, quella lieve con calma.
+   */
+  criticalMinMs: number;
   issueMinMs: number;
   lowSeverityMinMs: number;
   /** Silenzio minimo tra due frasi qualsiasi. */
@@ -34,7 +38,8 @@ export interface CoachConfig {
 }
 
 export const DEFAULT_COACH: CoachConfig = {
-  issueMinMs: 1500,
+  criticalMinMs: 800,
+  issueMinMs: 2000,
   lowSeverityMinMs: 3000,
   globalGapMs: 3500,
   repeatMs: 10000,
@@ -145,7 +150,12 @@ export class Coach {
   private pickHolding(t: number, state: HoldSessionState): Utterance | null {
     for (const issue of state.issues) {
       const low = issue.severity === 'low';
-      if (t - issue.since < (low ? this.config.lowSeverityMinMs : this.config.issueMinMs)) continue;
+      const minMs = low
+        ? this.config.lowSeverityMinMs
+        : issue.level === 'tolerable'
+          ? this.config.issueMinMs
+          : this.config.criticalMinMs;
+      if (t - issue.since < minMs) continue;
       const key = `issue:${issue.id}`;
       // La correzione principale è già stata detta da poco: si aspetta, senza passare a errori minori.
       if (t - this.since(key) < (low ? this.config.lowRepeatMs : this.config.repeatMs)) return null;

@@ -22,6 +22,9 @@ function toRaw(list: Array<{ x: number; y: number; z: number; visibility?: numbe
  */
 export class PoseDetector {
   private avgMs = 0;
+  /** Parte dal timestamp del warm-up: il primo frame reale deve venire dopo. */
+  private lastTs = WARMUP_TIMESTAMP;
+  private offset = 0;
 
   private constructor(
     private readonly landmarker: PoseLandmarker,
@@ -72,10 +75,21 @@ export class PoseDetector {
     return this.avgMs;
   }
 
-  /** `timestampMs` deve crescere strettamente a ogni chiamata. */
+  /**
+   * MediaPipe esige timestamp strettamente crescenti per tutta la vita del
+   * detector, che è condiviso tra live (performance.now) e analisi video (tempo
+   * del video, riparte da 0). Se un timestamp torna indietro si sposta l'offset:
+   * la sequenza resta monotona e gli intervalli tra frame restano quelli veri.
+   */
   detect(source: HTMLVideoElement, timestampMs: number): RawPose[] {
+    let ts = timestampMs + this.offset;
+    if (ts <= this.lastTs) {
+      this.offset += this.lastTs + 1 - ts;
+      ts = this.lastTs + 1;
+    }
+    this.lastTs = ts;
     const started = performance.now();
-    const result: PoseLandmarkerResult = this.landmarker.detectForVideo(source, timestampMs);
+    const result: PoseLandmarkerResult = this.landmarker.detectForVideo(source, ts);
     const elapsed = performance.now() - started;
     this.avgMs = this.avgMs === 0 ? elapsed : 0.9 * this.avgMs + 0.1 * elapsed;
     return result.landmarks.map((lms, i) => ({
