@@ -3,7 +3,7 @@ import { DEFAULT_EXERCISE, EXERCISES } from '../exercises';
 import { demoSession } from '../dev/synthetic';
 import { loadRecordedSession } from '../dev/recorder';
 import type { CameraFacing } from '../platform/camera/cameraSource';
-import { DEFAULT_DETECTOR, type DetectorOptions, type PoseModel } from '../platform/pose/detector';
+import { DEFAULT_DETECTOR, type DetectorOptions, type PoseModel } from '../platform/pose/detectorOptions';
 import type { RawPoseFrame } from '../core/tracking/types';
 import HUD, { INITIAL_HUD, type HudState } from './components/HUD';
 import type { SourceSpec, StageInfo } from './components/StageView';

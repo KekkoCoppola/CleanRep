@@ -1,22 +1,11 @@
 import { FilesetResolver, PoseLandmarker, type PoseLandmarkerResult } from '@mediapipe/tasks-vision';
 import type { RawLandmark, RawPose } from '../../core/tracking/types';
+import { DEFAULT_DETECTOR, type DetectorOptions } from './detectorOptions';
 
 /** Asset locali (scripts/fetch-models.mjs): stessa versione della libreria, offline, inclusi nell'APK. */
 const ASSET_BASE = `${import.meta.env.BASE_URL}mediapipe`;
 
-export type PoseModel = 'lite' | 'full' | 'heavy';
-
-export interface DetectorOptions {
-  /**
-   * "full" di default: "lite" perde spesso le pose orizzontali a terra (plank);
-   * "heavy" è più preciso ma nel browser gira ~5fps su un telefono medio.
-   */
-  model: PoseModel;
-  /** >1 per vedere anche le altre persone: il subject lock sceglie quella giusta. */
-  numPoses: number;
-}
-
-export const DEFAULT_DETECTOR: DetectorOptions = { model: 'full', numPoses: 2 };
+export type { DetectorOptions, PoseModel } from './detectorOptions';
 
 /** Timestamp del warm-up: i frame reali (performance.now()) arrivano sempre dopo. */
 const WARMUP_TIMESTAMP = 1;
