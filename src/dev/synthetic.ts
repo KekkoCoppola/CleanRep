@@ -302,7 +302,7 @@ export function demoSession(): RawPoseFrame[] {
     },
     { durationMs: 4000, body: { ...plank, kneeBend: 50 } },
     { durationMs: 5000, body: { kind: 'plank', variant: 'HIGH' } },
-    { durationMs: 4000, body: { kind: 'plank', variant: 'HIGH', armForward: 0.12 } },
+    { durationMs: 4000, body: { kind: 'plank', variant: 'HIGH', armForward: 0.18 } },
     { durationMs: 3000, body: { kind: 'standing', originX: 0.6 } },
     { durationMs: 2000, body: null },
   ]);

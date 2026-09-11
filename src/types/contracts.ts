@@ -72,11 +72,17 @@ export interface PoseSnapshot {
 
 export interface EvaluationResult {
   isCorrect: boolean;
-  /** 1–10 (0 riservato a "posa non rilevabile"). */
+  /** 1–10 in posizione; 0 = non valutabile (fuori posizione o posa non affidabile). */
   overallScore: number;
   jointsToColorRed: JointName[];
-  /** Frase italiana, massimo 8 parole, pronunciabile via TTS. */
+  /** Frase italiana, massimo 8 parole (testo HUD; la voce la decide il Coach). */
   audioFeedback: string;
+  phase: SessionPhase;
+  /** Variante riconosciuta (plank: FOREARM | HIGH), solo in HOLDING. */
+  variant?: string;
+  /** 0–1: affidabilità del giudizio (qualità posa × regole valutabili). */
+  confidence: number;
+  issues: EvaluationIssue[];
 }
 
 /** Interfaccia del motore di valutazione: il rule engine locale la implementa oggi, un eventuale valutatore remoto (Claude) domani. */
