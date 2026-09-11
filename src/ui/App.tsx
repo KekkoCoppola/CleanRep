@@ -9,8 +9,13 @@ import type { RawPoseFrame } from '../core/tracking/types';
 import HUD, { INITIAL_HUD, type HudState } from './components/HUD';
 import type { SourceSpec, StageInfo } from './components/StageView';
 import type { VideoAnalysisResult } from './analysis/analyzeVideo';
+import WorkoutsDashboard from './components/WorkoutsDashboard';
+import BottomNavBar, { type NavTab } from './components/BottomNavBar';
+import { ArrowLeftIcon } from './components/Icons';
+import OnboardingWizard from './components/OnboardingWizard';
+import { isOnboardingCompleted } from '../platform/profile/userProfile';
 
-// Lazy: il chunk con MediaPipe si carica solo quando serve (live o analisi video).
+// Lazy loading dei moduli pesanti (MediaPipe, analisi video, report)
 const StageView = lazy(() => import('./components/StageView'));
 const VideoAnalysisView = lazy(() => import('./components/VideoAnalysisView'));
 const ReportView = lazy(() => import('./components/ReportView'));
@@ -18,7 +23,6 @@ const ReportView = lazy(() => import('./components/ReportView'));
 type Phase = 'idle' | 'active' | 'analyzing' | 'report' | 'error';
 type SourceKind = 'camera' | 'video' | 'recording' | 'demo';
 
-/** L'HUD (stato React) si aggiorna 4 volte al secondo; il disegno va a frame rate pieno. */
 const HUD_INTERVAL_MS = 250;
 
 const params = new URLSearchParams(window.location.search);
@@ -33,6 +37,11 @@ const DETECTOR: DetectorOptions = {
 export default function App() {
   const exercise = EXERCISES[DEFAULT_EXERCISE];
   const [phase, setPhase] = useState<Phase>('idle');
+  const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean>(() => {
+    if (params.has('onboarding')) return false;
+    return isOnboardingCompleted();
+  });
   const [error, setError] = useState('');
   const [hud, setHud] = useState<HudState>(INITIAL_HUD);
   const [facing, setFacing] = useState<CameraFacing>('user');
@@ -42,6 +51,7 @@ export default function App() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [sex, setSex] = useState<Sex | ''>('');
   const [analysis, setAnalysis] = useState<VideoAnalysisResult | null>(null);
+  const [showVideoModal, setShowVideoModal] = useState(false);
   const latest = useRef<StageInfo | null>(null);
 
   const onInfo = useCallback((info: StageInfo) => {
@@ -85,15 +95,31 @@ export default function App() {
     return () => clearInterval(timer);
   }, [phase, exercise]);
 
-  const start = async () => {
+  /**
+   * Avvia l'allenamento con fotocamera live in tempo reale (Live Cam Workout).
+   * Invocato cliccando sull'icona della videocamera nella navbar o sulle card workout.
+   */
+  const startLiveCam = (_routineId?: string) => {
     setError('');
+    setSourceKind('camera');
+    latest.current = null;
+    setHud(INITIAL_HUD);
+    setPhase('active');
+  };
+
+  /**
+   * Avvio modalità debug / demo se configurata
+   */
+  const startWithSource = async (kind: SourceKind) => {
+    setError('');
+    setSourceKind(kind);
     try {
-      if (sourceKind === 'demo') setReplayFrames(demoSession());
-      if (sourceKind === 'recording') {
+      if (kind === 'demo') setReplayFrames(demoSession());
+      if (kind === 'recording') {
         if (!file) throw new Error('Seleziona un file di registrazione (.json)');
         setReplayFrames(await loadRecordedSession(file));
       }
-      if (sourceKind === 'video' && !file) throw new Error('Seleziona un file video');
+      if (kind === 'video' && !file) throw new Error('Seleziona un file video');
     } catch (err) {
       onError(err instanceof Error ? err.message : String(err));
       return;
@@ -107,39 +133,91 @@ export default function App() {
     if (!videoFile) return;
     setError('');
     setAnalysis(null);
+    setShowVideoModal(false);
     setPhase('analyzing');
   };
 
-  const backHome = () => setPhase('idle');
+  const backHome = () => {
+    setPhase('idle');
+    setActiveTab('dashboard');
+  };
 
-  const home = phase === 'idle' || phase === 'error';
+  if (!hasCompletedOnboarding) {
+    return (
+      <main className="app">
+        <OnboardingWizard
+          onComplete={(_profile) => {
+            setHasCompletedOnboarding(true);
+          }}
+        />
+      </main>
+    );
+  }
+
+  const isHome = phase === 'idle' || phase === 'error';
 
   return (
     <main className="app">
-      <header className="topbar">
-        <img className="brand-logo" src={`${import.meta.env.BASE_URL}icon-512.png`} alt="" width={32} height={32} />
-        <h1>CleanRep</h1>
-        <span className="tagline">
-          {exercise.name}
-          {isDebug ? ' · DEBUG' : ''}
-          {isRecord ? ' · REC' : ''}
-        </span>
-      </header>
+      {/* Visualizzazione Dashboard Home (Mockup) */}
+      {isHome && (
+        <>
+          {error && <div className="error-box">{error}</div>}
 
-      {home && (
-        <section className="home">
-          {phase === 'error' && <p className="ko error-box">{error}</p>}
+          <WorkoutsDashboard
+            onStartLiveWorkout={startLiveCam}
+            onOpenVideoAnalysis={() => setShowVideoModal(true)}
+            onOpenOnboarding={() => setHasCompletedOnboarding(false)}
+          />
 
-          <div className="mode-card">
-            <h2>Allenamento live</h2>
-            <p>
-              Appoggia il telefono a terra in verticale e mettiti <strong>di lato</strong>, a corpo intero
-              nell’inquadratura. Lo scheletro diventa <span className="ok">verde</span> quando la postura è
-              corretta e <span className="ko">rosso</span> sui punti da correggere; la voce ti corregge.
-            </p>
-            {isDebug && (
+          {/* Modal Caricamento Video per Analisi */}
+          {showVideoModal && (
+            <div className="video-analysis-modal" role="dialog" aria-modal="true">
+              <div className="video-analysis-modal-content">
+                <h3>Analizza un video</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                  Carica un video di lato per verificare la tecnica, il tempo valido e le correzioni.
+                </p>
+                <label className="file-pick">
+                  <input
+                    type="file"
+                    accept="video/*"
+                    onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)}
+                  />
+                  <span>{videoFile ? videoFile.name : 'Tocca per scegliere un video…'}</span>
+                </label>
+                <label className="field">
+                  <span>Valori di riferimento:</span>
+                  <select value={sex} onChange={(e) => setSex(e.target.value as Sex | '')}>
+                    <option value="">Tutti</option>
+                    <option value="male">Uomo</option>
+                    <option value="female">Donna</option>
+                  </select>
+                </label>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                  <button
+                    className="cta"
+                    style={{ flex: 1 }}
+                    onClick={startAnalysis}
+                    disabled={!videoFile}
+                  >
+                    Avvia analisi
+                  </button>
+                  <button
+                    className="secondary"
+                    onClick={() => setShowVideoModal(false)}
+                  >
+                    Chiudi
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Modalità Sorgente Debug (visibile solo se URL ha ?debug) */}
+          {isDebug && (
+            <div style={{ padding: '0 16px 80px 16px' }}>
               <fieldset className="dev-source">
-                <legend>Sorgente (debug)</legend>
+                <legend>Sorgente avanzata (debug)</legend>
                 {(
                   [
                     ['camera', 'Fotocamera'],
@@ -168,46 +246,46 @@ export default function App() {
                     onChange={(e) => setFile(e.target.files?.[0] ?? null)}
                   />
                 )}
+                <button
+                  className="secondary"
+                  style={{ marginTop: '8px' }}
+                  onClick={() => startWithSource(sourceKind)}
+                >
+                  Avvia sorgente debug
+                </button>
               </fieldset>
-            )}
-            <button className="cta" onClick={start}>
-              Inizia allenamento
-            </button>
-          </div>
+            </div>
+          )}
 
-          <div className="mode-card">
-            <h2>Analizza un video</h2>
-            <p>
-              Carica un video del tuo plank ripreso <strong>di lato</strong>: ricevi un breve report su cosa migliorare,
-              il tempo valido fino al cedimento tecnico e le immagini dei momenti da correggere.
-            </p>
-            <label className="file-pick">
-              <input type="file" accept="video/*" onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)} />
-              <span>{videoFile ? videoFile.name : 'Scegli un video…'}</span>
-            </label>
-            <label className="field">
-              <span>Valori di riferimento</span>
-              <select value={sex} onChange={(e) => setSex(e.target.value as Sex | '')}>
-                <option value="">Uomini e donne</option>
-                <option value="male">Uomo</option>
-                <option value="female">Donna</option>
-              </select>
-            </label>
-            <button className="cta" onClick={startAnalysis} disabled={!videoFile}>
-              Analizza video
-            </button>
-          </div>
-
-          <p className="hint">
-            Consigli: telefono a ~50 cm da terra e a 2–3 metri, tutto il corpo visibile dalla testa ai piedi, luce
-            frontale e nessun controluce, possibilmente nessun’altra persona nell’inquadratura.
-          </p>
-          <p className="hint">Tutto gira in locale sul dispositivo: nessun video lascia il telefono.</p>
-        </section>
+          {/* Bottom Docked Navbar con Icona Videocamera */}
+          <BottomNavBar
+            activeTab={activeTab}
+            onSelectTab={setActiveTab}
+            onStartLiveCam={() => startLiveCam()}
+          />
+        </>
       )}
 
+      {/* Fase 2: Allenamento Live AR con MediaPipe e HUD */}
       {phase === 'active' && source && (
-        <>
+        <div className="live-workout-container">
+          <header className="live-workout-topbar">
+            <button className="live-exit-btn" onClick={backHome} aria-label="Termina sessione">
+              <ArrowLeftIcon size={18} />
+              <span>Termina</span>
+            </button>
+            <div className="live-exercise-pill">CleanRep · {exercise.name}</div>
+            {sourceKind === 'camera' && (
+              <button
+                className="live-flip-btn"
+                onClick={() => setFacing((f) => (f === 'user' ? 'environment' : 'user'))}
+                aria-label="Cambia fotocamera"
+              >
+                {facing === 'user' ? 'Posteriore' : 'Frontale'}
+              </button>
+            )}
+          </header>
+
           <Suspense fallback={<div className="loading">Caricamento modello AI…</div>}>
             <StageView
               source={source}
@@ -219,22 +297,14 @@ export default function App() {
               onError={onError}
             />
           </Suspense>
+
           <HUD {...hud} />
-          <div className="controls">
-            {sourceKind === 'camera' && (
-              <button className="secondary" onClick={() => setFacing((f) => (f === 'user' ? 'environment' : 'user'))}>
-                {facing === 'user' ? 'Usa camera posteriore' : 'Usa camera frontale'}
-              </button>
-            )}
-            <button className="secondary" onClick={backHome}>
-              Termina sessione
-            </button>
-          </div>
-        </>
+        </div>
       )}
 
+      {/* Fase 3: Analisi Video in corso */}
       {phase === 'analyzing' && videoFile && (
-        <Suspense fallback={<div className="loading">Caricamento…</div>}>
+        <Suspense fallback={<div className="loading">Caricamento motore AI…</div>}>
           <VideoAnalysisView
             file={videoFile}
             exercise={exercise}
@@ -247,8 +317,9 @@ export default function App() {
         </Suspense>
       )}
 
+      {/* Fase 4: Report Analisi Video */}
       {phase === 'report' && analysis && (
-        <Suspense fallback={<div className="loading">Caricamento…</div>}>
+        <Suspense fallback={<div className="loading">Caricamento report…</div>}>
           <ReportView result={analysis} onNew={backHome} />
         </Suspense>
       )}
