@@ -96,6 +96,7 @@ export default function App() {
   return (
     <main className="app">
       <header className="topbar">
+        <img className="brand-logo" src={`${import.meta.env.BASE_URL}icon-512.png`} alt="" width={32} height={32} />
         <h1>CleanRep</h1>
         <span className="tagline">
           {exercise.name}
