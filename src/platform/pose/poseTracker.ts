@@ -1,9 +1,10 @@
 import { FilesetResolver, PoseLandmarker } from '@mediapipe/tasks-vision';
-import type { JointName, LandmarkPoint, PoseSnapshot } from '../types/contracts';
-import { JOINT_NAMES, LANDMARK_INDEX } from './landmarks';
+import type { JointName, LandmarkPoint, PoseSnapshot } from '../../types/contracts';
+import { JOINT_NAMES, LANDMARK_INDEX } from '../../core/pose/landmarks';
 
-const WASM_CDN =
-  'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm';
+/** Asset locali (scripts/fetch-models.mjs): stessa versione della libreria, funzionano offline e nell'APK. */
+const ASSET_BASE = `${import.meta.env.BASE_URL}mediapipe`;
+const WASM_PATH = `${ASSET_BASE}/wasm`;
 
 export type PoseModel = 'lite' | 'full';
 
@@ -13,8 +14,8 @@ export type PoseModel = 'lite' | 'full';
  * in alternativa si può forzare "lite" via ?model=lite.
  */
 const MODEL_URLS: Record<PoseModel, string> = {
-  lite: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
-  full: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task',
+  lite: `${ASSET_BASE}/models/pose_landmarker_lite.task`,
+  full: `${ASSET_BASE}/models/pose_landmarker_full.task`,
 };
 
 /** Sopra questo tempo medio di inferenza si dimezza il framerate di tracking. */
@@ -43,7 +44,7 @@ export class PoseTracker {
   private lastVideoTime = -1;
 
   async init(model: PoseModel = 'full'): Promise<void> {
-    const fileset = await FilesetResolver.forVisionTasks(WASM_CDN);
+    const fileset = await FilesetResolver.forVisionTasks(WASM_PATH);
     this.landmarker = await PoseLandmarker.createFromOptions(fileset, {
       baseOptions: { modelAssetPath: MODEL_URLS[model], delegate: 'GPU' },
       runningMode: 'VIDEO',

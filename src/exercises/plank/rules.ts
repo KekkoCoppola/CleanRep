@@ -4,8 +4,8 @@ import type {
   JointName,
   LandmarkPoint,
   PoseSnapshot,
-} from '../types/contracts';
-import { angleBetween3Points, distance, verticalDeviationFromLine } from './geometry';
+} from '../../types/contracts';
+import { angleBetween3Points, distance, verticalDeviationFromLine } from '../../core/geometry/geometry';
 
 /** Soglie biomeccaniche del plank (coordinate normalizzate / gradi). */
 export const PLANK_THRESHOLDS = {

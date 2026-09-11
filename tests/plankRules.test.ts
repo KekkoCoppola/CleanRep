@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { PoseSnapshot } from '../src/types/contracts';
-import { FEEDBACK, computePlankAngles, evaluatePlank } from '../src/engine/plankRules';
-import { LocalPlankEvaluator } from '../src/engine/evaluator';
-import plankCorrectJson from '../src/fixtures/plank-correct.json';
-import plankHipSagJson from '../src/fixtures/plank-hip-sag.json';
-import plankHipPikeJson from '../src/fixtures/plank-hip-pike.json';
+import { FEEDBACK, computePlankAngles, evaluatePlank } from '../src/exercises/plank/rules';
+import { LocalPlankEvaluator } from '../src/exercises/plank/evaluator';
+import plankCorrectJson from '../src/exercises/plank/fixtures/plank-correct.json';
+import plankHipSagJson from '../src/exercises/plank/fixtures/plank-hip-sag.json';
+import plankHipPikeJson from '../src/exercises/plank/fixtures/plank-hip-pike.json';
 
 const plankCorrect = plankCorrectJson as unknown as PoseSnapshot;
 const plankHipSag = plankHipSagJson as unknown as PoseSnapshot;

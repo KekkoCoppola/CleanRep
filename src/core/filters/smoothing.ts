@@ -1,4 +1,4 @@
-import type { ComputedAngles, EvaluationResult } from '../types/contracts';
+import type { ComputedAngles, EvaluationResult } from '../../types/contracts';
 
 /** Media mobile esponenziale per una singola serie di valori. */
 export class Ema {

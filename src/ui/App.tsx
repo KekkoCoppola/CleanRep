@@ -1,8 +1,8 @@
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import type { FrameInfo } from './components/CameraView';
 import HUD from './components/HUD';
-import { resetSpeech, speak } from './feedback/speech';
-import { FEEDBACK } from './engine/plankRules';
+import { resetSpeech, speak } from '../platform/speech/webSpeech';
+import { FEEDBACK } from '../exercises/plank/rules';
 
 // Lazy: il chunk con MediaPipe (~WASM+modello via CDN) si carica solo al click "Inizia".
 const CameraView = lazy(() => import('./components/CameraView'));

@@ -1,4 +1,4 @@
-import type { JointName } from '../types/contracts';
+import type { JointName } from '../../types/contracts';
 
 /** Indici del modello MediaPipe Pose (33 landmark). Solo quelli usati da CleanRep. */
 export const LANDMARK_INDEX: Record<JointName, number> = {

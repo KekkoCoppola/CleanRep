@@ -4,7 +4,7 @@ import {
   distance,
   midpoint,
   verticalDeviationFromLine,
-} from '../src/engine/geometry';
+} from '../src/core/geometry/geometry';
 
 describe('angleBetween3Points', () => {
   it('ritorna 90° per un angolo retto', () => {

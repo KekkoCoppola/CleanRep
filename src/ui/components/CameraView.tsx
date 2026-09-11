@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
-import type { EvaluationResult, JointName, PoseSnapshot } from '../types/contracts';
-import type { PoseModel, TrackerMetrics } from '../pose/poseTracker';
-import { PoseTracker } from '../pose/poseTracker';
-import { LocalPlankEvaluator } from '../engine/evaluator';
-import { drawSkeleton } from './skeletonRenderer';
+import type { EvaluationResult, JointName, PoseSnapshot } from '../../types/contracts';
+import type { PoseModel, TrackerMetrics } from '../../platform/pose/poseTracker';
+import { PoseTracker } from '../../platform/pose/poseTracker';
+import { LocalPlankEvaluator } from '../../exercises/plank/evaluator';
+import { drawSkeleton } from '../render/skeletonRenderer';
 
 export interface FrameInfo {
   result: EvaluationResult;

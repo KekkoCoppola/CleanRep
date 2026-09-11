@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react';
-import type { EvaluationResult, JointName, PoseSnapshot } from '../types/contracts';
-import { LocalPlankEvaluator } from '../engine/evaluator';
-import { drawSkeleton } from './skeletonRenderer';
+import type { EvaluationResult, JointName, PoseSnapshot } from '../../types/contracts';
+import { LocalPlankEvaluator } from '../../exercises/plank/evaluator';
+import { drawSkeleton } from '../render/skeletonRenderer';
 import type { FrameInfo } from './CameraView';
-import plankCorrect from '../fixtures/plank-correct.json';
-import plankHipSag from '../fixtures/plank-hip-sag.json';
-import plankHipPike from '../fixtures/plank-hip-pike.json';
+import plankCorrect from '../../exercises/plank/fixtures/plank-correct.json';
+import plankHipSag from '../../exercises/plank/fixtures/plank-hip-sag.json';
+import plankHipPike from '../../exercises/plank/fixtures/plank-hip-pike.json';
 
 interface Props {
   onFrame: (info: FrameInfo) => void;

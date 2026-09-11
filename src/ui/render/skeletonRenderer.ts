@@ -1,5 +1,5 @@
-import type { JointName, LandmarkPoint } from '../types/contracts';
-import { SKELETON_CONNECTIONS } from '../pose/landmarks';
+import type { JointName, LandmarkPoint } from '../../types/contracts';
+import { SKELETON_CONNECTIONS } from '../../core/pose/landmarks';
 
 const GREEN = '#22c55e';
 const RED = '#ef4444';
