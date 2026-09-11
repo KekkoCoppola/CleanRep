@@ -18,15 +18,16 @@ body {
   color: var(--text);
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .app {
-  max-width: 720px;
+  max-width: 960px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   align-items: center;
 }
 
@@ -38,7 +39,7 @@ body {
 }
 
 .topbar h1 {
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   letter-spacing: 0.5px;
 }
 
@@ -50,18 +51,36 @@ body {
 .idle {
   background: var(--panel);
   border-radius: 12px;
-  padding: 28px;
+  padding: 24px;
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  max-width: 480px;
+  gap: 18px;
+  max-width: 520px;
   line-height: 1.5;
 }
 
 .hint {
   color: var(--muted);
   font-size: 0.8rem;
+}
+
+.dev-source {
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.dev-source label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
 }
 
 .cta {
@@ -79,12 +98,20 @@ body {
   filter: brightness(1.1);
 }
 
-.stop {
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.secondary {
   background: transparent;
   color: var(--muted);
   border: 1px solid var(--muted);
   border-radius: 8px;
-  padding: 8px 20px;
+  padding: 10px 18px;
+  font-size: 0.9rem;
   cursor: pointer;
 }
 
@@ -93,52 +120,36 @@ body {
   color: var(--muted);
 }
 
+/* Il palco non impone proporzioni: il canvas fa letterbox del frame (viewport "contain"). */
 .stage {
   position: relative;
   width: 100%;
-  max-width: 640px;
-  aspect-ratio: 4 / 3;
+  height: min(68vh, 68dvh);
+  min-height: 260px;
   background: #000;
   border-radius: 12px;
   overflow: hidden;
 }
 
-.stage video {
+.stage-canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  display: block;
 }
 
-.overlay,
-.overlay-static {
+/* Il <video> è solo la sorgente dei frame: a schermo c'è il canvas (immagine + scheletro dello stesso frame). */
+.source-video {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-/* Specchia webcam e overlay insieme: l'utente si vede come allo specchio. */
-.mirrored {
-  transform: scaleX(-1);
-}
-
-.debug-label {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  background: rgba(0, 0, 0, 0.55);
-  color: var(--muted);
-  font-size: 0.75rem;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-family: monospace;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .hud {
   width: 100%;
-  max-width: 640px;
   background: var(--panel);
   border-radius: 12px;
   padding: 12px 16px;
@@ -152,6 +163,8 @@ body {
   border-radius: 10px;
   padding: 8px 12px;
   background: rgba(255, 255, 255, 0.05);
+  min-width: 72px;
+  text-align: center;
 }
 
 .hud-score-value {
@@ -166,6 +179,13 @@ body {
 .hud-center {
   flex: 1;
   min-width: 0;
+}
+
+.hud-phase {
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
 }
 
 .hud-message {
@@ -184,6 +204,7 @@ body {
   font-size: 0.75rem;
   font-family: monospace;
   white-space: nowrap;
+  text-align: right;
 }
 
 .ok {
@@ -192,4 +213,8 @@ body {
 
 .ko {
   color: var(--red);
+}
+
+.neutral {
+  color: var(--text);
 }

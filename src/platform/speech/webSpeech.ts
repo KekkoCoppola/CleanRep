@@ -1,30 +1,51 @@
+import type { SpeechOutput } from './types';
+
 /**
- * Feedback vocale via Web Speech API (locale, gratuito).
- * Throttling: pronuncia solo frasi diverse dall'ultima detta e mai
- * più di una ogni MIN_INTERVAL_MS — evita l'effetto pappagallo.
+ * Voce via Web Speech API (browser). Sceglie esplicitamente una voce italiana
+ * locale se disponibile: la voce di default del sistema può essere inglese e
+ * leggere l'italiano in modo incomprensibile.
  */
-const MIN_INTERVAL_MS = 4000;
+export class WebSpeechOutput implements SpeechOutput {
+  private voice: SpeechSynthesisVoice | null = null;
+  private speaking = false;
+  private readonly supported = typeof window !== 'undefined' && 'speechSynthesis' in window;
 
-let lastPhrase = '';
-let lastSpokenAt = 0;
+  constructor() {
+    if (!this.supported) return;
+    this.pickVoice();
+    window.speechSynthesis.addEventListener('voiceschanged', () => this.pickVoice());
+  }
 
-export function speak(phrase: string): void {
-  if (!('speechSynthesis' in window) || !phrase) return;
-  const now = Date.now();
-  if (phrase === lastPhrase || now - lastSpokenAt < MIN_INTERVAL_MS) return;
+  speak(text: string, options: { interrupt?: boolean } = {}): void {
+    if (!this.supported || !text) return;
+    const synth = window.speechSynthesis;
+    if (options.interrupt) synth.cancel();
+    else if (this.isSpeaking()) return;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'it-IT';
+    if (this.voice) utterance.voice = this.voice;
+    utterance.rate = 1.0;
+    utterance.onend = utterance.onerror = () => {
+      this.speaking = false;
+    };
+    this.speaking = true;
+    synth.speak(utterance);
+  }
 
-  const utterance = new SpeechSynthesisUtterance(phrase);
-  utterance.lang = 'it-IT';
-  utterance.rate = 1.05;
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(utterance);
+  isSpeaking(): boolean {
+    return this.supported && (this.speaking || window.speechSynthesis.speaking);
+  }
 
-  lastPhrase = phrase;
-  lastSpokenAt = now;
-}
+  cancel(): void {
+    if (!this.supported) return;
+    this.speaking = false;
+    window.speechSynthesis.cancel();
+  }
 
-export function resetSpeech(): void {
-  lastPhrase = '';
-  lastSpokenAt = 0;
-  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  private pickVoice(): void {
+    const italian = window.speechSynthesis
+      .getVoices()
+      .filter((v) => v.lang.replace('_', '-').toLowerCase().startsWith('it'));
+    this.voice = italian.find((v) => v.localService) ?? italian[0] ?? null;
+  }
 }
