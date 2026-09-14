@@ -1,11 +1,11 @@
 import {
-  CalendarNavIcon,
   ChartNavIcon,
   GridNavIcon,
+  RoutineNavIcon,
   VideoCameraNavIcon,
 } from './Icons';
 
-export type NavTab = 'dashboard' | 'calendar' | 'analytics';
+export type NavTab = 'dashboard' | 'routine' | 'analytics' | 'calendar';
 
 interface Props {
   activeTab: NavTab;
@@ -16,9 +16,12 @@ interface Props {
 /**
  * Docked bottom navigation bar fedele al mockup:
  * 4 icone ad alto contrasto con blur di sfondo.
+ * La seconda icona è la Scheda/Routine (checklist su clipboard) richiesta esplicitamente.
  * La quarta icona è la videocamera che avvia l'allenamento live AR con MediaPipe.
  */
 export default function BottomNavBar({ activeTab, onSelectTab, onStartLiveCam }: Props) {
+  const isRoutineActive = activeTab === 'routine' || activeTab === 'calendar';
+
   return (
     <nav className="bottom-navbar" aria-label="Navigazione principale">
       <div className="bottom-navbar-content">
@@ -34,12 +37,12 @@ export default function BottomNavBar({ activeTab, onSelectTab, onStartLiveCam }:
 
         <button
           type="button"
-          className={`nav-item ${activeTab === 'calendar' ? 'active' : ''}`}
-          onClick={() => onSelectTab('calendar')}
-          aria-label="Calendario allenamenti"
-          aria-current={activeTab === 'calendar' ? 'page' : undefined}
+          className={`nav-item ${isRoutineActive ? 'active' : ''}`}
+          onClick={() => onSelectTab('routine')}
+          aria-label="Routine e schede di allenamento"
+          aria-current={isRoutineActive ? 'page' : undefined}
         >
-          <CalendarNavIcon size={24} />
+          <RoutineNavIcon size={24} />
         </button>
 
         <button

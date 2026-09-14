@@ -14,6 +14,7 @@ import BottomNavBar, { type NavTab } from './components/BottomNavBar';
 import { ArrowLeftIcon } from './components/Icons';
 import OnboardingWizard from './components/OnboardingWizard';
 import { isOnboardingCompleted } from '../platform/profile/userProfile';
+import RoutineScreen from './routine/RoutineScreen';
 
 // Lazy loading dei moduli pesanti (MediaPipe, analisi video, report)
 const StageView = lazy(() => import('./components/StageView'));
@@ -158,16 +159,24 @@ export default function App() {
 
   return (
     <main className="app">
-      {/* Visualizzazione Dashboard Home (Mockup) */}
+      {/* Visualizzazione Dashboard Home o Routine (Mockup) */}
       {isHome && (
         <>
           {error && <div className="error-box">{error}</div>}
 
-          <WorkoutsDashboard
-            onStartLiveWorkout={startLiveCam}
-            onOpenVideoAnalysis={() => setShowVideoModal(true)}
-            onOpenOnboarding={() => setHasCompletedOnboarding(false)}
-          />
+          {activeTab === 'dashboard' && (
+            <WorkoutsDashboard
+              onStartLiveWorkout={startLiveCam}
+              onOpenVideoAnalysis={() => setShowVideoModal(true)}
+              onOpenOnboarding={() => setHasCompletedOnboarding(false)}
+            />
+          )}
+
+          {(activeTab === 'routine' || activeTab === 'calendar') && (
+            <RoutineScreen
+              onStartWorkout={(routineId) => startLiveCam(routineId)}
+            />
+          )}
 
           {/* Modal Caricamento Video per Analisi */}
           {showVideoModal && (
