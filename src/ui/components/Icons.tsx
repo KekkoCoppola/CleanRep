@@ -287,6 +287,82 @@ export function ArrowLeftIcon({ className = '', size = 20, color = 'currentColor
 }
 
 /**
+ * Icona Cambio Fotocamera (frontale/posteriore): due frecce circolari attorno all'obiettivo.
+ */
+export function SwitchCameraIcon({ className = '', size = 20, color = 'currentColor' }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M20 12a8 8 0 0 0-14.3-4.9" />
+      <polyline points="5.2 3.1 5.7 7.1 9.7 6.6" />
+      <path d="M4 12a8 8 0 0 0 14.3 4.9" />
+      <polyline points="18.8 20.9 18.3 16.9 14.3 17.4" />
+      <circle cx="12" cy="12" r="2.3" />
+    </svg>
+  );
+}
+
+/**
+ * Icona Schermo Intero (angoli verso l'esterno).
+ */
+export function ExpandIcon({ className = '', size = 20, color = 'currentColor' }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M4 9V6a2 2 0 0 1 2-2h3" />
+      <path d="M15 4h3a2 2 0 0 1 2 2v3" />
+      <path d="M20 15v3a2 2 0 0 1-2 2h-3" />
+      <path d="M9 20H6a2 2 0 0 1-2-2v-3" />
+    </svg>
+  );
+}
+
+/**
+ * Icona Esci da Schermo Intero (angoli verso l'interno).
+ */
+export function CollapseIcon({ className = '', size = 20, color = 'currentColor' }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M9 4v3a2 2 0 0 1-2 2H4" />
+      <path d="M20 9h-3a2 2 0 0 1-2-2V4" />
+      <path d="M15 20v-3a2 2 0 0 1 2-2h3" />
+      <path d="M4 15h3a2 2 0 0 1 2 2v3" />
+    </svg>
+  );
+}
+
+/**
  * Icona Manubrio / Pesi per la selezione "Palestra".
  */
 export function DumbbellIcon({ className = '', size = 22, color = 'currentColor' }: IconProps) {

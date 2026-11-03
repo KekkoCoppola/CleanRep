@@ -11,6 +11,8 @@ interface Props {
   activeTab: NavTab;
   onSelectTab: (tab: NavTab) => void;
   onStartLiveCam: () => void;
+  /** Sessione live in corso: la navbar resta sotto la fotocamera, con l'icona cam attiva. */
+  liveActive?: boolean;
 }
 
 /**
@@ -19,18 +21,20 @@ interface Props {
  * La seconda icona è la Scheda/Routine (checklist su clipboard) richiesta esplicitamente.
  * La quarta icona è la videocamera che avvia l'allenamento live AR con MediaPipe.
  */
-export default function BottomNavBar({ activeTab, onSelectTab, onStartLiveCam }: Props) {
-  const isRoutineActive = activeTab === 'routine' || activeTab === 'calendar';
+export default function BottomNavBar({ activeTab, onSelectTab, onStartLiveCam, liveActive = false }: Props) {
+  const isDashboardActive = !liveActive && activeTab === 'dashboard';
+  const isRoutineActive = !liveActive && (activeTab === 'routine' || activeTab === 'calendar');
+  const isAnalyticsActive = !liveActive && activeTab === 'analytics';
 
   return (
-    <nav className="bottom-navbar" aria-label="Navigazione principale">
+    <nav className={`bottom-navbar ${liveActive ? 'bottom-navbar--live' : ''}`} aria-label="Navigazione principale">
       <div className="bottom-navbar-content">
         <button
           type="button"
-          className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+          className={`nav-item ${isDashboardActive ? 'active' : ''}`}
           onClick={() => onSelectTab('dashboard')}
           aria-label="Workouts Dashboard"
-          aria-current={activeTab === 'dashboard' ? 'page' : undefined}
+          aria-current={isDashboardActive ? 'page' : undefined}
         >
           <GridNavIcon size={24} />
         </button>
@@ -47,18 +51,19 @@ export default function BottomNavBar({ activeTab, onSelectTab, onStartLiveCam }:
 
         <button
           type="button"
-          className={`nav-item ${activeTab === 'analytics' ? 'active' : ''}`}
+          className={`nav-item ${isAnalyticsActive ? 'active' : ''}`}
           onClick={() => onSelectTab('analytics')}
           aria-label="Statistiche e carichi"
-          aria-current={activeTab === 'analytics' ? 'page' : undefined}
+          aria-current={isAnalyticsActive ? 'page' : undefined}
         >
           <ChartNavIcon size={24} />
         </button>
 
         <button
           type="button"
-          className="nav-item live-cam-nav-item"
+          className={`nav-item live-cam-nav-item ${liveActive ? 'active' : ''}`}
           onClick={onStartLiveCam}
+          aria-current={liveActive ? 'page' : undefined}
           aria-label="Avvia Live Cam Workout"
           title="Inizia allenamento con fotocamera live"
         >
