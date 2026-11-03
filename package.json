@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "fetch-models": "node scripts/fetch-models.mjs",
+    "catalog": "node scripts/build-exercise-catalog.ts",
     "android:sync": "npm run build && cap sync android",
     "android:apk": "npm run android:sync && node scripts/build-apk.mjs",
     "android:open": "cap open android",
