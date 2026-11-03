@@ -1,11 +1,15 @@
 import { useMemo, useRef, useState } from 'react';
 import {
-  PRESET_EXERCISES,
+  DEFAULT_NOTES_PLACEHOLDER,
+  DEFAULT_REPS,
+  DEFAULT_SETS,
+  type CatalogExercise,
   type MuscleTarget,
-  type PresetExercise,
   type Routine,
   type RoutineExercise,
 } from './RoutineTypes';
+import { EXERCISE_CATALOG, searchExercises } from './catalog/exerciseCatalog';
+import { resolveExerciseForm } from './catalog/exerciseForm';
 import { clearAllRoutines, deleteRoutine, loadRoutines, saveRoutine } from './RoutineStorage';
 import RoutineHeader from './RoutineHeader';
 import MuscleVolumeCard from './MuscleVolumeCard';
@@ -34,11 +38,11 @@ export default function RoutineScreen({ onStartWorkout }: Props) {
 
   // Ricerca e selezione esercizio
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPreset, setSelectedPreset] = useState<PresetExercise>(PRESET_EXERCISES[2]); // Dumbbell Incline di default
+  const [selectedExercise, setSelectedExercise] = useState<CatalogExercise | null>(null);
 
-  // Campi personalizzazione esercizio
-  const [customSets, setCustomSets] = useState('3');
-  const [customReps, setCustomReps] = useState('8-12');
+  // Campi personalizzazione esercizio (vuoti: i default sono nei placeholder)
+  const [customSets, setCustomSets] = useState('');
+  const [customReps, setCustomReps] = useState('');
   const [customNotes, setCustomNotes] = useState('');
 
   // Riferimento al container per auto-scroll fluido
@@ -88,13 +92,10 @@ export default function RoutineScreen({ onStartWorkout }: Props) {
   }, [createdExercises]);
 
   // Filtro esercizi nella barra di ricerca
-  const filteredExercises = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) return PRESET_EXERCISES;
-    return PRESET_EXERCISES.filter((ex) =>
-      ex.name.toLowerCase().includes(q)
-    );
-  }, [searchQuery]);
+  const filteredExercises = useMemo(
+    () => searchExercises(EXERCISE_CATALOG, searchQuery),
+    [searchQuery]
+  );
 
   // Avvio flusso creazione nuova routine
   const handleStartCreate = () => {
@@ -113,28 +114,32 @@ export default function RoutineScreen({ onStartWorkout }: Props) {
   };
 
   // Selezione esercizio per personalizzazione
-  const handleSelectPreset = (preset: PresetExercise) => {
-    setSelectedPreset(preset);
-    setCustomSets(String(preset.defaultSets));
-    setCustomReps(preset.defaultReps);
-    setCustomNotes(preset.defaultNotes || '');
+  const handleSelectExercise = (exercise: CatalogExercise) => {
+    setSelectedExercise(exercise);
+    setCustomSets('');
+    setCustomReps('');
+    setCustomNotes('');
     setStep('customize-exercise');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Conferma aggiunta esercizio con sets e reps personalizzati
+  // Conferma aggiunta esercizio: campi vuoti → valori dei placeholder
   const handleConfirmAddExercise = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const setsNumber = Math.max(1, parseInt(customSets, 10) || 3);
+    if (!selectedExercise) return;
+    const { sets, reps, notes } = resolveExerciseForm(
+      { sets: customSets, reps: customReps, notes: customNotes },
+      selectedExercise
+    );
 
     const newEx: RoutineExercise = {
       id: `ex-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
-      exerciseId: selectedPreset.id,
-      name: selectedPreset.name,
-      sets: setsNumber,
-      reps: customReps || selectedPreset.defaultReps,
-      notes: customNotes,
-      primaryMuscles: selectedPreset.primaryMuscles,
+      exerciseId: selectedExercise.id,
+      name: selectedExercise.name,
+      sets,
+      reps,
+      notes,
+      primaryMuscles: selectedExercise.primaryMuscles,
     };
 
     setCreatedExercises((prev) => [...prev, newEx]);
@@ -188,7 +193,7 @@ export default function RoutineScreen({ onStartWorkout }: Props) {
         step={step}
         routineName={routineName}
         durationMinutes={calculatedDuration}
-        selectedExerciseName={selectedPreset ? (selectedPreset.name.includes('Incline') ? 'Dumbell Incline' : selectedPreset.name) : 'Personalizza'}
+        selectedExerciseName={selectedExercise?.name ?? 'Personalizza'}
         onBack={() => {
           if (step === 'customize-exercise') setStep('select-exercise');
           else if (step === 'select-exercise') setStep('create');
@@ -408,14 +413,14 @@ export default function RoutineScreen({ onStartWorkout }: Props) {
 
           {/* Lista Esercizi Selezionabili */}
           <div className="routine-exercises-preset-list">
-            {filteredExercises.map((preset) => (
+            {filteredExercises.map((exercise) => (
               <button
-                key={preset.id}
+                key={exercise.id}
                 type="button"
                 className="routine-preset-item-card"
-                onClick={() => handleSelectPreset(preset)}
+                onClick={() => handleSelectExercise(exercise)}
               >
-                <span className="routine-preset-item-title">{preset.name}</span>
+                <span className="routine-preset-item-title">{exercise.name}</span>
               </button>
             ))}
 
@@ -431,10 +436,14 @@ export default function RoutineScreen({ onStartWorkout }: Props) {
       {/* ------------------------------------------------------------------
           SCHERMATA 4: Personalizzazione Esercizio (Personalizzazione esercizio.png)
          ------------------------------------------------------------------ */}
-      {step === 'customize-exercise' && (
+      {step === 'customize-exercise' && selectedExercise && (
         <div className="routine-customize-screen">
-          {/* Grafica Esercizio Panca Inclinata */}
-          <ExerciseCustomizationGraphic />
+          {/* GIF ExerciseDB dell'esercizio (key: nuova GIF azzera un eventuale errore di caricamento) */}
+          <ExerciseCustomizationGraphic
+            key={selectedExercise.gifUrl}
+            gifUrl={selectedExercise.gifUrl}
+            alt={selectedExercise.name}
+          />
 
           {/* Form Personalizzazione Campi */}
           <form className="routine-customize-form" onSubmit={handleConfirmAddExercise}>
@@ -453,7 +462,7 @@ export default function RoutineScreen({ onStartWorkout }: Props) {
                 value={customSets}
                 onChange={(e) => setCustomSets(e.target.value)}
                 onFocus={handleInputFocus}
-                required
+                placeholder={String(DEFAULT_SETS)}
               />
             </div>
 
@@ -468,8 +477,7 @@ export default function RoutineScreen({ onStartWorkout }: Props) {
                 value={customReps}
                 onChange={(e) => setCustomReps(e.target.value)}
                 onFocus={handleInputFocus}
-                placeholder="es. 10 o 8-12"
-                required
+                placeholder={DEFAULT_REPS}
               />
             </div>
 
@@ -484,7 +492,7 @@ export default function RoutineScreen({ onStartWorkout }: Props) {
                 value={customNotes}
                 onChange={(e) => setCustomNotes(e.target.value)}
                 onFocus={handleInputFocus}
-                placeholder="es. RPE 8, pausa 90s..."
+                placeholder={selectedExercise.notesPlaceholder ?? DEFAULT_NOTES_PLACEHOLDER}
               />
             </div>
 

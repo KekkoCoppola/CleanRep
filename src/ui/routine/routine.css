@@ -609,14 +609,13 @@
   min-height: 180px;
 }
 
-.exercise-incline-graphic-img {
+/* GIF ExerciseDB (sfondo bianco) in negativo: lo sfondo diventa nero e sparisce con screen */
+.exercise-gif-negative {
   max-height: 175px;
   width: auto;
   object-fit: contain;
+  filter: invert(1) hue-rotate(180deg);
   mix-blend-mode: screen;
-  mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 1) 65%, rgba(0, 0, 0, 0) 100%);
-  -webkit-mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 1) 65%, rgba(0, 0, 0, 0) 100%);
-  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.8));
   animation: routineFadeIn 0.35s ease-out;
 }
 

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { MuscleTarget } from './RoutineTypes';
 
 interface TorsoProps {
@@ -107,21 +108,22 @@ export function MuscleTorsoGraphic({ highlight = 'chest', size = 52, className =
 }
 
 interface ExerciseIllustrationProps {
-  exerciseName?: string;
+  gifUrl: string;
+  alt: string;
   className?: string;
 }
 
 /**
- * Grafica dell'atleta su panca inclinata identica a Personalizzazione esercizio.png
+ * GIF ExerciseDB dell'esercizio, resa in negativo via CSS per fondersi con lo sfondo scuro
+ * (il server non manda CORS: niente elaborazione su canvas). Se non si carica, ad esempio
+ * offline, l'illustrazione sparisce e il form resta usabile.
  */
-export function ExerciseCustomizationGraphic({ className = '' }: ExerciseIllustrationProps) {
+export function ExerciseCustomizationGraphic({ gifUrl, alt, className = '' }: ExerciseIllustrationProps) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
   return (
     <div className={`exercise-customization-graphic-wrapper ${className}`}>
-      <img
-        src={`${import.meta.env.BASE_URL}assets/incline_press_illustration_raw.png`}
-        alt="Esecuzione esercizio panca inclinata"
-        className="exercise-incline-graphic-img"
-      />
+      <img src={gifUrl} alt={alt} className="exercise-gif-negative" onError={() => setFailed(true)} />
     </div>
   );
 }
