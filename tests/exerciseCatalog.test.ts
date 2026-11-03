@@ -43,6 +43,18 @@ describe('searchExercises', () => {
     expect(searchExercises(fixture, 'pulldown')).toHaveLength(1);
   });
 
+  it('ignora trattini e punteggiatura nei nomi inglesi', () => {
+    const named = [
+      exercise('Trazioni alla sbarra', 'Pull-Up'),
+      exercise('Curl con bilanciere EZ', 'EZ-Bar Curl'),
+      exercise('Rematore al T-bar', 'T-Bar Row'),
+    ];
+    expect(searchExercises(named, 'pull up').map((e) => e.nameEn)).toEqual(['Pull-Up']);
+    expect(searchExercises(named, 'ez bar').map((e) => e.nameEn)).toEqual(['EZ-Bar Curl']);
+    expect(searchExercises(named, 'pullup').map((e) => e.nameEn)).toEqual(['Pull-Up']);
+    expect(searchExercises(named, 'tbar').map((e) => e.nameEn)).toEqual(['T-Bar Row']);
+  });
+
   it('query vuota → catalogo intero, nessuna corrispondenza → lista vuota', () => {
     expect(searchExercises(fixture, '')).toBe(fixture);
     expect(searchExercises(fixture, '   ')).toBe(fixture);
