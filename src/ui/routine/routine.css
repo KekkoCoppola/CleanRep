@@ -1,0 +1,748 @@
+/* ==========================================================================
+   CleanRep - Schermata Routine & Creazione Workflow (100% Mockup Fidelity)
+   ========================================================================== */
+
+.routine-screen-container {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-app, #000000);
+  color: var(--text-primary, #ffffff);
+  position: relative;
+  overflow-x: hidden;
+  padding-bottom: max(90px, env(safe-area-inset-bottom, 90px));
+}
+
+/* --------------------------------------------------------------------------
+   Header Fisso & Logo Routine
+   -------------------------------------------------------------------------- */
+
+.routine-header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  padding: 16px 20px 10px 20px;
+  padding-top: max(16px, env(safe-area-inset-top, 16px));
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.routine-header-back-btn {
+  position: absolute;
+  left: 16px;
+  top: max(16px, env(safe-area-inset-top, 16px));
+  background: transparent;
+  border: none;
+  color: #a0a4b6;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.routine-header-back-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.routine-header-back-btn:active {
+  transform: scale(0.92);
+}
+
+.routine-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+
+.routine-brand-r {
+  height: 26px;
+  width: auto;
+  display: block;
+}
+
+.routine-brand-text {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  line-height: 1;
+}
+
+.routine-sub-details {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  animation: routineFadeIn 0.25s ease-out;
+}
+
+.routine-title-edit-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+
+.routine-title-edit-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.routine-current-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.routine-pencil-icon {
+  color: #8c90a2;
+}
+
+.routine-duration-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #8c90a2;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.routine-step-subtitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-top: 4px;
+  text-align: center;
+  letter-spacing: -0.01em;
+  animation: routineFadeIn 0.25s ease-out;
+}
+
+/* --------------------------------------------------------------------------
+   Schermata 1 & 5: Lista Routine (Vuota o con Routine)
+   -------------------------------------------------------------------------- */
+
+.routine-list-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-top: 8px;
+}
+
+.routine-empty-state-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  padding: 24px;
+}
+
+.routine-empty-hint {
+  font-size: 0.95rem;
+  color: #4a4d5e;
+  text-align: center;
+  max-width: 260px;
+  line-height: 1.5;
+  animation: routineFadeIn 0.6s ease;
+}
+
+/* Card Routine Salvata (Schermata routine con routine.png) */
+.routine-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  animation: routineFadeIn 0.3s ease-out;
+}
+
+.routine-saved-card {
+  width: 100%;
+  background: #171821;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 24px;
+  padding: 14px 18px 14px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.routine-saved-card:hover {
+  background: #1c1e28;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.routine-card-main-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.routine-card-title {
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.routine-card-duration {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #8c90a2;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.routine-card-play-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.routine-card-play-btn:hover {
+  transform: scale(1.08);
+}
+
+.routine-card-play-btn:active {
+  transform: scale(0.92);
+}
+
+/* Floating Action Button (+ Crea) fedele a Schermata routine (vuota).png */
+.routine-floating-create-btn {
+  position: fixed;
+  right: 20px;
+  bottom: 86px;
+  z-index: 80;
+  background: #ffffff;
+  color: #000000;
+  border: none;
+  border-radius: 9999px;
+  padding: 13px 26px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6), 0 0 16px rgba(255, 255, 255, 0.18);
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, opacity 0.2s ease;
+  animation: routineSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.routine-floating-create-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.routine-floating-create-btn:active {
+  transform: scale(0.95);
+}
+
+/* --------------------------------------------------------------------------
+   Schermata 2: Creazione Routine (Creazione Routine.png)
+   -------------------------------------------------------------------------- */
+
+.routine-create-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  animation: routineFadeIn 0.25s ease-out;
+}
+
+/* Carosello Volumetrico Muscoli */
+.routine-muscle-carousel {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 14px 16px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.routine-muscle-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.muscle-volume-card {
+  flex: 0 0 148px;
+  min-width: 148px;
+  height: 154px;
+  background: #171821;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 24px;
+  padding: 14px 12px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  scroll-snap-align: start;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.muscle-volume-card:hover {
+  background: #1c1d27;
+  border-color: rgba(255, 255, 255, 0.09);
+  transform: translateY(-2px);
+}
+
+.muscle-card-torso-container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 6px;
+}
+
+.muscle-card-name {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+  margin-bottom: 2px;
+}
+
+.muscle-card-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #8c90a2;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.trend-arrow-circle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.muscle-card-meter {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: auto;
+}
+
+.meter-dots-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 2px;
+}
+
+.meter-dot {
+  width: 4.5px;
+  height: 4.5px;
+  border-radius: 50%;
+  background: #2b2e3c;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.meter-dot.active {
+  background: #ffffff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+}
+
+.meter-labels-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 0.75rem;
+  color: #63677a;
+  font-weight: 600;
+  margin-top: 1px;
+}
+
+.meter-current {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+/* Lista Esercizi nella Creazione Routine */
+.routine-create-exercises-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 16px;
+}
+
+.routine-exercise-item-pill {
+  width: 100%;
+  background: #171821;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 22px;
+  padding: 16px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: routineSlideUp 0.25s ease-out;
+}
+
+.routine-exercise-item-pill:hover {
+  background: #1d1f2a;
+}
+
+.routine-exercise-name {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.routine-exercise-sets-tag {
+  font-size: 0.9rem;
+  color: #8c90a2;
+  font-weight: 500;
+}
+
+/* Pulsante "+ aggiungi esercizio" fedele a Creazione Routine.png */
+.routine-add-exercise-trigger-btn {
+  width: calc(100% - 32px);
+  margin: 10px 16px 20px 16px;
+  background: #20222c;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+  padding: 15px 24px;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.routine-add-exercise-trigger-btn:hover {
+  background: #262936;
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.routine-add-exercise-trigger-btn:active {
+  transform: scale(0.98);
+}
+
+/* Tasto "Salva" (appare solo quando ci sono esercizi) */
+.routine-save-action-wrapper {
+  margin-top: auto;
+  padding: 20px 16px 16px 16px;
+  display: flex;
+  justify-content: center;
+  animation: routineFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.routine-save-btn {
+  background: #ffffff;
+  color: #000000;
+  border: none;
+  border-radius: 9999px;
+  padding: 14px 48px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
+  transition: transform 0.18s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.routine-save-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(255, 255, 255, 0.35);
+}
+
+.routine-save-btn:active {
+  transform: scale(0.96);
+}
+
+/* --------------------------------------------------------------------------
+   Schermata 3: Aggiunta Esercizio (Aggiunta esercizio.png)
+   -------------------------------------------------------------------------- */
+
+.routine-select-exercise-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  animation: routineFadeIn 0.25s ease-out;
+}
+
+/* Barra di Ricerca Pillola con Lente */
+.routine-search-bar {
+  margin: 12px 16px 16px 16px;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-radius: 9999px;
+  background: transparent;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.routine-search-bar:focus-within {
+  border-color: #ffffff;
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.15);
+}
+
+.routine-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 0.98rem;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  outline: none;
+}
+
+.routine-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.routine-search-icon {
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.routine-exercises-preset-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 16px 24px 16px;
+}
+
+.routine-preset-item-card {
+  width: 100%;
+  background: #171821;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 22px;
+  padding: 17px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.routine-preset-item-card:hover {
+  background: #20222d;
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+.routine-preset-item-card:active {
+  transform: scale(0.98);
+}
+
+.routine-preset-item-title {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+/* --------------------------------------------------------------------------
+   Schermata 4: Personalizzazione Esercizio (Personalizzazione esercizio.png)
+   -------------------------------------------------------------------------- */
+
+.routine-customize-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  animation: routineFadeIn 0.25s ease-out;
+  padding-bottom: 24px;
+}
+
+/* Grafica Atleta su Panca Inclinata */
+.exercise-customization-graphic-wrapper {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  min-height: 180px;
+}
+
+.exercise-incline-graphic-img {
+  max-height: 175px;
+  width: auto;
+  object-fit: contain;
+  mix-blend-mode: screen;
+  mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 1) 65%, rgba(0, 0, 0, 0) 100%);
+  -webkit-mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 1) 65%, rgba(0, 0, 0, 0) 100%);
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.8));
+  animation: routineFadeIn 0.35s ease-out;
+}
+
+/* Form Campi (Sets, Reps, Note) */
+.routine-customize-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 6px 16px 20px 16px;
+}
+
+.routine-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.routine-form-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #ffffff;
+  padding-left: 4px;
+}
+
+.routine-form-input {
+  width: 100%;
+  background: #171821;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  padding: 15px 20px;
+  font-size: 0.98rem;
+  color: #ffffff;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  outline: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.routine-form-input:focus {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: #1d1f2a;
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.08);
+}
+
+.routine-form-input::placeholder {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+/* Tasto Pillola "Aggiungi" */
+.routine-customize-add-btn-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.routine-customize-add-btn {
+  background: #ffffff;
+  color: #000000;
+  border: none;
+  border-radius: 9999px;
+  padding: 14px 44px;
+  font-size: 1.02rem;
+  font-weight: 700;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(255, 255, 255, 0.2);
+  transition: transform 0.18s ease, box-shadow 0.2s ease;
+}
+
+.routine-customize-add-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(255, 255, 255, 0.35);
+}
+
+.routine-customize-add-btn:active {
+  transform: scale(0.96);
+}
+
+/* Modal Edit Nome Routine */
+.routine-edit-name-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: routineFadeIn 0.2s ease-out;
+}
+
+.routine-edit-name-content {
+  width: 100%;
+  max-width: 360px;
+  background: #181922;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* --------------------------------------------------------------------------
+   Animazioni e Transizioni
+   -------------------------------------------------------------------------- */
+
+@keyframes routineFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes routineSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

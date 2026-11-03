@@ -17,6 +17,9 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    watch: {
+      ignored: ['**/apk/**', '**/android/**', '**/dist/**'],
+    },
     // Consente l'accesso via tunnel ngrok (test da smartphone: getUserMedia richiede HTTPS).
     allowedHosts: ['.ngrok-free.dev', '.ngrok-free.app', '.ngrok.app', '.ngrok.dev'],
   },

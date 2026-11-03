@@ -11,9 +11,11 @@ import type { SourceSpec, StageInfo } from './components/StageView';
 import type { VideoAnalysisResult } from './analysis/analyzeVideo';
 import WorkoutsDashboard from './components/WorkoutsDashboard';
 import BottomNavBar, { type NavTab } from './components/BottomNavBar';
-import { ArrowLeftIcon } from './components/Icons';
+import { ArrowLeftIcon, CollapseIcon, ExpandIcon, SwitchCameraIcon } from './components/Icons';
 import OnboardingWizard from './components/OnboardingWizard';
 import { isOnboardingCompleted } from '../platform/profile/userProfile';
+import RoutineScreen from './routine/RoutineScreen';
+import SplashScreen from './components/SplashScreen';
 
 // Lazy loading dei moduli pesanti (MediaPipe, analisi video, report)
 const StageView = lazy(() => import('./components/StageView'));
@@ -52,7 +54,14 @@ export default function App() {
   const [sex, setSex] = useState<Sex | ''>('');
   const [analysis, setAnalysis] = useState<VideoAnalysisResult | null>(null);
   const [showVideoModal, setShowVideoModal] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
+  // Schermo intero nella sessione live: nasconde la navbar e lascia tutto lo spazio alla fotocamera
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  // Mezzi giri dell'icona cambio fotocamera: ruota sempre nello stesso verso a ogni tocco
+  const [flipTurns, setFlipTurns] = useState(0);
   const latest = useRef<StageInfo | null>(null);
+
+  const hideSplash = useCallback(() => setShowSplash(false), []);
 
   const onInfo = useCallback((info: StageInfo) => {
     latest.current = info;
@@ -104,6 +113,7 @@ export default function App() {
     setSourceKind('camera');
     latest.current = null;
     setHud(INITIAL_HUD);
+    setIsFullscreen(false);
     setPhase('active');
   };
 
@@ -126,6 +136,7 @@ export default function App() {
     }
     latest.current = null;
     setHud(INITIAL_HUD);
+    setIsFullscreen(false);
     setPhase('active');
   };
 
@@ -142,6 +153,19 @@ export default function App() {
     setActiveTab('dashboard');
   };
 
+  /** Dalla sessione live un tocco su un'altra tab chiude la fotocamera e apre quella tab. */
+  const selectTab = (tab: NavTab) => {
+    setActiveTab(tab);
+    if (phase === 'active') setPhase('idle');
+  };
+
+  const flipCamera = () => {
+    setFacing((f) => (f === 'user' ? 'environment' : 'user'));
+    setFlipTurns((n) => n + 1);
+  };
+
+  const splash = showSplash && <SplashScreen onDone={hideSplash} />;
+
   if (!hasCompletedOnboarding) {
     return (
       <main className="app">
@@ -150,24 +174,34 @@ export default function App() {
             setHasCompletedOnboarding(true);
           }}
         />
+        {splash}
       </main>
     );
   }
 
   const isHome = phase === 'idle' || phase === 'error';
+  const isLive = phase === 'active' && source !== null;
 
   return (
-    <main className="app">
-      {/* Visualizzazione Dashboard Home (Mockup) */}
+    <main className={`app ${isLive ? 'app--live' : ''}`}>
+      {/* Visualizzazione Dashboard Home o Routine (Mockup) */}
       {isHome && (
         <>
           {error && <div className="error-box">{error}</div>}
 
-          <WorkoutsDashboard
-            onStartLiveWorkout={startLiveCam}
-            onOpenVideoAnalysis={() => setShowVideoModal(true)}
-            onOpenOnboarding={() => setHasCompletedOnboarding(false)}
-          />
+          {activeTab === 'dashboard' && (
+            <WorkoutsDashboard
+              onStartLiveWorkout={startLiveCam}
+              onOpenVideoAnalysis={() => setShowVideoModal(true)}
+              onOpenOnboarding={() => setHasCompletedOnboarding(false)}
+            />
+          )}
+
+          {(activeTab === 'routine' || activeTab === 'calendar') && (
+            <RoutineScreen
+              onStartWorkout={(routineId) => startLiveCam(routineId)}
+            />
+          )}
 
           {/* Modal Caricamento Video per Analisi */}
           {showVideoModal && (
@@ -256,18 +290,11 @@ export default function App() {
               </fieldset>
             </div>
           )}
-
-          {/* Bottom Docked Navbar con Icona Videocamera */}
-          <BottomNavBar
-            activeTab={activeTab}
-            onSelectTab={setActiveTab}
-            onStartLiveCam={() => startLiveCam()}
-          />
         </>
       )}
 
       {/* Fase 2: Allenamento Live AR con MediaPipe e HUD */}
-      {phase === 'active' && source && (
+      {isLive && source && (
         <div className="live-workout-container">
           <header className="live-workout-topbar">
             <button className="live-exit-btn" onClick={backHome} aria-label="Termina sessione">
@@ -275,15 +302,31 @@ export default function App() {
               <span>Termina</span>
             </button>
             <div className="live-exercise-pill">CleanRep · {exercise.name}</div>
-            {sourceKind === 'camera' && (
+            <div className="live-side-actions">
+              {sourceKind === 'camera' && (
+                <button
+                  type="button"
+                  className="live-icon-btn"
+                  onClick={flipCamera}
+                  aria-label={facing === 'user' ? 'Passa alla fotocamera posteriore' : 'Passa alla fotocamera frontale'}
+                  title="Cambia fotocamera"
+                >
+                  <span className="live-flip-icon" style={{ transform: `rotate(${flipTurns * 180}deg)` }}>
+                    <SwitchCameraIcon size={20} />
+                  </span>
+                </button>
+              )}
               <button
-                className="live-flip-btn"
-                onClick={() => setFacing((f) => (f === 'user' ? 'environment' : 'user'))}
-                aria-label="Cambia fotocamera"
+                type="button"
+                className="live-icon-btn"
+                onClick={() => setIsFullscreen((v) => !v)}
+                aria-pressed={isFullscreen}
+                aria-label={isFullscreen ? 'Esci da schermo intero' : 'Schermo intero'}
+                title={isFullscreen ? 'Esci da schermo intero' : 'Schermo intero'}
               >
-                {facing === 'user' ? 'Posteriore' : 'Frontale'}
+                {isFullscreen ? <CollapseIcon size={20} /> : <ExpandIcon size={20} />}
               </button>
-            )}
+            </div>
           </header>
 
           <Suspense fallback={<div className="loading">Caricamento modello AI…</div>}>
@@ -323,6 +366,20 @@ export default function App() {
           <ReportView result={analysis} onNew={backHome} />
         </Suspense>
       )}
+
+      {/* Bottom Docked Navbar: resta anche nella sessione live, salvo schermo intero */}
+      {(isHome || (isLive && !isFullscreen)) && (
+        <BottomNavBar
+          activeTab={activeTab}
+          onSelectTab={selectTab}
+          onStartLiveCam={() => {
+            if (!isLive) startLiveCam();
+          }}
+          liveActive={isLive}
+        />
+      )}
+
+      {splash}
     </main>
   );
 }
