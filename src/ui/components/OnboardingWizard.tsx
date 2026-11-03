@@ -95,7 +95,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
         {/* Logo CleanRep 'R' centrato */}
         <div className="onboarding-logo-wrapper">
           <img
-            src={`${import.meta.env.BASE_URL}assets/logo/CleanRep_R.svg`}
+            src={`${import.meta.env.BASE_URL}assets/logo/cleanrep-r-192.png`}
             alt="CleanRep Logo"
             className="onboarding-logo"
           />

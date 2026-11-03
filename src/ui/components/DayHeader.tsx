@@ -24,7 +24,7 @@ export default function DayHeader({ mode, onToggleMode }: Props) {
         {isRest ? (
           <div className="day-title-text rest">
             <img
-              src={`${import.meta.env.BASE_URL}assets/logo/CleanRep_R.svg`}
+              src={`${import.meta.env.BASE_URL}assets/logo/cleanrep-r-192.png`}
               alt="R"
               className="cleanrep-inline-r"
             />
@@ -34,7 +34,7 @@ export default function DayHeader({ mode, onToggleMode }: Props) {
           <div className="day-title-text workout">
             <span className="title-prefix">Wo</span>
             <img
-              src={`${import.meta.env.BASE_URL}assets/logo/CleanRep_R.svg`}
+              src={`${import.meta.env.BASE_URL}assets/logo/cleanrep-r-192.png`}
               alt="R"
               className="cleanrep-inline-r workout-r"
             />

@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { EXERCISE_CATALOG } from '../src/ui/routine/catalog/exerciseCatalog';
+import { loadExerciseCatalog } from '../src/ui/routine/catalog/exerciseCatalog';
 import namesIt from '../scripts/exercise-catalog/names-it.json';
 
 const names = namesIt as Record<string, string>;
+const EXERCISE_CATALOG = await loadExerciseCatalog();
 
 describe('nomi italiani del catalogo', () => {
   it('ogni esercizio ha un nome italiano', () => {

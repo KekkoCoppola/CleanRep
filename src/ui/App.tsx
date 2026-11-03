@@ -12,12 +12,13 @@ import type { VideoAnalysisResult } from './analysis/analyzeVideo';
 import WorkoutsDashboard from './components/WorkoutsDashboard';
 import BottomNavBar, { type NavTab } from './components/BottomNavBar';
 import { ArrowLeftIcon } from './components/Icons';
-import OnboardingWizard from './components/OnboardingWizard';
 import { isOnboardingCompleted } from '../platform/profile/userProfile';
 import RoutineScreen from './routine/RoutineScreen';
 
 // Lazy loading dei moduli pesanti (MediaPipe, analisi video, report)
 const StageView = lazy(() => import('./components/StageView'));
+// Solo al primo avvio: fuori dal bundle iniziale.
+const OnboardingWizard = lazy(() => import('./components/OnboardingWizard'));
 const VideoAnalysisView = lazy(() => import('./components/VideoAnalysisView'));
 const ReportView = lazy(() => import('./components/ReportView'));
 
@@ -146,11 +147,13 @@ export default function App() {
   if (!hasCompletedOnboarding) {
     return (
       <main className="app">
-        <OnboardingWizard
-          onComplete={(_profile) => {
-            setHasCompletedOnboarding(true);
-          }}
-        />
+        <Suspense fallback={null}>
+          <OnboardingWizard
+            onComplete={(_profile) => {
+              setHasCompletedOnboarding(true);
+            }}
+          />
+        </Suspense>
       </main>
     );
   }

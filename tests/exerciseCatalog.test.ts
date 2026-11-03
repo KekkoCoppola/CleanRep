@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { EXERCISE_CATALOG, searchExercises } from '../src/ui/routine/catalog/exerciseCatalog';
+import { loadExerciseCatalog, searchExercises } from '../src/ui/routine/catalog/exerciseCatalog';
 import { resolveExerciseForm } from '../src/ui/routine/catalog/exerciseForm';
-import type { CatalogExercise } from '../src/ui/routine/RoutineTypes';
+import { MUSCLE_DISPLAY_NAMES, type CatalogExercise } from '../src/ui/routine/RoutineTypes';
+import { LEGACY_PRESET_NOTES } from '../scripts/exercise-catalog/legacyPresetNotes.ts';
+import { normalizeName } from '../scripts/exercise-catalog/transform.ts';
+
+const EXERCISE_CATALOG = await loadExerciseCatalog();
 
 const exercise = (name: string, nameEn: string): CatalogExercise => ({
   id: nameEn,
@@ -16,6 +20,23 @@ describe('EXERCISE_CATALOG', () => {
   it('contiene il catalogo ExerciseDB deduplicato', () => {
     expect(EXERCISE_CATALOG.length).toBeGreaterThan(1200);
     expect(new Set(EXERCISE_CATALOG.map((e) => e.id)).size).toBe(EXERCISE_CATALOG.length);
+  });
+
+  it('si carica su richiesta una sola volta (stessa istanza)', async () => {
+    expect(await loadExerciseCatalog()).toBe(EXERCISE_CATALOG);
+  });
+
+  it('ogni muscolo è un MuscleTarget valido', () => {
+    const valid = new Set(Object.keys(MUSCLE_DISPLAY_NAMES));
+    const invalid = EXERCISE_CATALOG.flatMap((e) => e.primaryMuscles.filter((m) => !valid.has(m)).map((m) => `${e.id}:${m}`));
+    expect(invalid).toEqual([]);
+  });
+
+  it('ogni nota degli ex preset finisce su esattamente un esercizio', () => {
+    for (const key of Object.keys(LEGACY_PRESET_NOTES)) {
+      const matches = EXERCISE_CATALOG.filter((e) => normalizeName(e.nameEn) === key);
+      expect(matches.map((e) => e.notesPlaceholder), key).toEqual([LEGACY_PRESET_NOTES[key]]);
+    }
   });
 
   it('ogni esercizio punta a una GIF ExerciseDB', () => {
@@ -70,6 +91,10 @@ describe('resolveExerciseForm', () => {
   it('sets non validi → 3', () => {
     expect(resolveExerciseForm({ sets: '0', reps: '', notes: '' }, {}).sets).toBe(3);
     expect(resolveExerciseForm({ sets: 'abc', reps: '', notes: '' }, {}).sets).toBe(3);
+  });
+
+  it('sets oltre il massimo → 20', () => {
+    expect(resolveExerciseForm({ sets: '25', reps: '', notes: '' }, {}).sets).toBe(20);
   });
 
   it('valori inseriti vengono rispettati (trim)', () => {

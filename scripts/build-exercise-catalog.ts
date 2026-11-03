@@ -9,12 +9,12 @@
  * Uso: npm run catalog            (rigenera dallo snapshot)
  *      npm run catalog -- --fetch (riscarica lo snapshot, poi rigenera)
  *
- * Richiede Node >= 23.6 (type-stripping nativo dei .ts).
+ * Richiede Node >= 22.6 (type-stripping dei .ts; lo script npm passa --experimental-strip-types).
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildCatalog } from './exercise-catalog/transform.ts';
+import { buildCatalog, isSnapshotReplaceable } from './exercise-catalog/transform.ts';
 import type { RawExercise } from './exercise-catalog/transform.ts';
 import { LEGACY_PRESET_NOTES } from './exercise-catalog/legacyPresetNotes.ts';
 
@@ -38,16 +38,18 @@ interface ApiPage {
   meta: { hasNextPage: boolean; nextCursor?: string };
 }
 
+/** Una pagina valida: risposta HTTP ok, JSON con `data` array. Errori di rete, HTML o 4xx/5xx → retry. */
 async function getPage(url: string): Promise<ApiPage> {
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    const res = await fetch(url);
-    const body = await res.text();
     try {
-      return JSON.parse(body) as ApiPage;
-    } catch {
-      console.warn(`[catalog] risposta non JSON (HTTP ${res.status}), tentativo ${attempt}/${MAX_RETRIES}`);
-      await sleep(3000 * attempt);
+      const res = await fetch(url);
+      const page = (await res.json()) as ApiPage;
+      if (res.ok && Array.isArray(page?.data)) return page;
+      console.warn(`[catalog] risposta non valida (HTTP ${res.status}), tentativo ${attempt}/${MAX_RETRIES}`);
+    } catch (err) {
+      console.warn(`[catalog] errore di rete o JSON (${(err as Error).message}), tentativo ${attempt}/${MAX_RETRIES}`);
     }
+    if (attempt < MAX_RETRIES) await sleep(3000 * attempt);
   }
   throw new Error(`[catalog] impossibile scaricare ${url}`);
 }
@@ -56,11 +58,13 @@ async function fetchSnapshot(): Promise<RawExercise[]> {
   const all: RawExercise[] = [];
   let cursor: string | undefined;
   do {
-    const page = await getPage(`${API}?limit=${PAGE_SIZE}${cursor ? `&after=${cursor}` : ''}`);
+    const page = await getPage(`${API}?limit=${PAGE_SIZE}${cursor ? `&after=${encodeURIComponent(cursor)}` : ''}`);
     for (const { exerciseId, name, gifUrl, targetMuscles, equipments } of page.data) {
       all.push({ exerciseId, name, gifUrl, targetMuscles, equipments });
     }
-    cursor = page.meta.hasNextPage ? page.meta.nextCursor : undefined;
+    const next = page.meta.hasNextPage ? page.meta.nextCursor : undefined;
+    if (next && next === cursor) throw new Error(`[catalog] il cursore ${next} si ripete: paginazione bloccata`);
+    cursor = next;
     if (cursor) await sleep(PAGE_DELAY_MS);
   } while (cursor);
   return all;
@@ -77,6 +81,10 @@ function writeJson(path: string, data: unknown): void {
 
 if (process.argv.includes('--fetch')) {
   const snapshot = await fetchSnapshot();
+  const current = readJson<RawExercise[]>(snapshotPath, []).length;
+  if (!isSnapshotReplaceable(snapshot.length, current)) {
+    throw new Error(`[catalog] download sospetto (${snapshot.length} esercizi contro ${current} salvati): snapshot non sovrascritto`);
+  }
   writeJson(snapshotPath, snapshot);
 }
 

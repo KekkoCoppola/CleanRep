@@ -1,11 +1,23 @@
 import type { CatalogExercise } from '../RoutineTypes';
-import catalog from './exercises.json';
+
+let catalogPromise: Promise<CatalogExercise[]> | null = null;
 
 /**
  * Catalogo esercizi generato da ExerciseDB (npm run catalog).
- * Il JSON è prodotto da buildCatalog tipizzato: il cast recupera i literal di MuscleTarget.
+ * Il JSON (~270 KB) vive in un chunk separato: si scarica e si analizza solo quando
+ * serve, non all'avvio dell'app. Il JSON è prodotto da buildCatalog tipizzato: il cast
+ * recupera i literal di MuscleTarget (i test verificano che siano validi).
  */
-export const EXERCISE_CATALOG = catalog as CatalogExercise[];
+export function loadExerciseCatalog(): Promise<CatalogExercise[]> {
+  catalogPromise ??= import('./exercises.json').then(
+    (module) => module.default as CatalogExercise[],
+    (err: unknown) => {
+      catalogPromise = null; // permette un nuovo tentativo
+      throw err;
+    },
+  );
+  return catalogPromise;
+}
 
 /** Minuscole, senza accenti, punteggiatura ("Pull-Up", "EZ-Bar") ridotta a spazi singoli. */
 function normalizeQuery(text: string): string {

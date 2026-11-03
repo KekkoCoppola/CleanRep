@@ -36,6 +36,13 @@ const MUSCLE_GROUPS: Record<string, MuscleTarget | null> = {
   'cardiovascular system': null,
 };
 
+/** Un download sotto il 90% dello snapshot salvato è quasi certamente parziale: non va scritto. */
+const MIN_SNAPSHOT_RATIO = 0.9;
+
+export function isSnapshotReplaceable(downloaded: number, current: number): boolean {
+  return downloaded > 0 && downloaded >= current * MIN_SNAPSHOT_RATIO;
+}
+
 export function normalizeName(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 }

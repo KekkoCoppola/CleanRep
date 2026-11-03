@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useDeferredValue, useMemo, useRef, useState } from 'react';
 import {
   DEFAULT_NOTES_PLACEHOLDER,
   DEFAULT_REPS,
@@ -8,7 +8,7 @@ import {
   type Routine,
   type RoutineExercise,
 } from './RoutineTypes';
-import { EXERCISE_CATALOG, searchExercises } from './catalog/exerciseCatalog';
+import { loadExerciseCatalog, searchExercises } from './catalog/exerciseCatalog';
 import { resolveExerciseForm } from './catalog/exerciseForm';
 import { clearAllRoutines, deleteRoutine, loadRoutines, saveRoutine } from './RoutineStorage';
 import RoutineHeader from './RoutineHeader';
@@ -38,7 +38,17 @@ export default function RoutineScreen({ onStartWorkout }: Props) {
 
   // Ricerca e selezione esercizio
   const [searchQuery, setSearchQuery] = useState('');
+  // La lista (fino a ~1.300 righe) si aggiorna in differita: la digitazione resta fluida.
+  const deferredQuery = useDeferredValue(searchQuery);
   const [selectedExercise, setSelectedExercise] = useState<CatalogExercise | null>(null);
+
+  // Catalogo caricato su richiesta (chunk separato), non all'avvio dell'app
+  const [catalog, setCatalog] = useState<CatalogExercise[] | null>(null);
+  const [catalogError, setCatalogError] = useState(false);
+  const ensureCatalog = useCallback(() => {
+    setCatalogError(false);
+    loadExerciseCatalog().then(setCatalog, () => setCatalogError(true));
+  }, []);
 
   // Campi personalizzazione esercizio (vuoti: i default sono nei placeholder)
   const [customSets, setCustomSets] = useState('');
@@ -93,8 +103,8 @@ export default function RoutineScreen({ onStartWorkout }: Props) {
 
   // Filtro esercizi nella barra di ricerca
   const filteredExercises = useMemo(
-    () => searchExercises(EXERCISE_CATALOG, searchQuery),
-    [searchQuery]
+    () => (catalog ? searchExercises(catalog, deferredQuery) : []),
+    [catalog, deferredQuery]
   );
 
   // Avvio flusso creazione nuova routine
@@ -103,12 +113,14 @@ export default function RoutineScreen({ onStartWorkout }: Props) {
     setTempName('Chest day');
     setCreatedExercises([]);
     setStep('create');
+    ensureCatalog(); // prefetch: il catalogo è pronto quando si tocca "+ aggiungi esercizio"
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Apertura schermata selezione esercizio
   const handleOpenAddExercise = () => {
     setSearchQuery('');
+    ensureCatalog();
     setStep('select-exercise');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -426,7 +438,15 @@ export default function RoutineScreen({ onStartWorkout }: Props) {
 
             {filteredExercises.length === 0 && (
               <div style={{ textAlign: 'center', padding: '24px', color: '#686b7c' }}>
-                Nessun esercizio trovato per "{searchQuery}"
+                {catalogError ? (
+                  <button type="button" className="routine-preset-item-card" onClick={ensureCatalog}>
+                    <span className="routine-preset-item-title">Catalogo non disponibile, tocca per riprovare</span>
+                  </button>
+                ) : !catalog ? (
+                  'Caricamento esercizi…'
+                ) : (
+                  `Nessun esercizio trovato per "${searchQuery}"`
+                )}
               </div>
             )}
           </div>
@@ -455,9 +475,6 @@ export default function RoutineScreen({ onStartWorkout }: Props) {
                 id="field-sets"
                 type="number"
                 inputMode="numeric"
-                pattern="[0-9]*"
-                min={1}
-                max={20}
                 className="routine-form-input"
                 value={customSets}
                 onChange={(e) => setCustomSets(e.target.value)}

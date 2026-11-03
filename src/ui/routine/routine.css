@@ -138,6 +138,16 @@
   animation: routineFadeIn 0.25s ease-out;
 }
 
+/* Nomi esercizio lunghi (fino a ~86 caratteri): massimo 2 righe nell'header sticky */
+.routine-step-subtitle--clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  padding: 0 44px;
+}
+
 /* --------------------------------------------------------------------------
    Schermata 1 & 5: Lista Routine (Vuota o con Routine)
    -------------------------------------------------------------------------- */
@@ -567,7 +577,10 @@
   justify-content: space-between;
   cursor: pointer;
   text-align: left;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  /* ~1.300 righe: il browser salta layout e paint di quelle fuori schermo */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 58px;
 }
 
 .routine-preset-item-card:hover {

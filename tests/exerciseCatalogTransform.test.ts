@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildCatalog,
   dedupeByName,
+  isSnapshotReplaceable,
   mapMuscles,
   normalizeName,
   toDisplayCase,
@@ -69,6 +70,21 @@ describe('dedupeByName', () => {
       raw('DsgkuIt', 'dumbbell lateral raise', ['deltoids']),
     ]);
     expect(out.map((e) => e.exerciseId)).toEqual(['B3Rxp6L', 'DsgkuIt']);
+  });
+});
+
+describe('isSnapshotReplaceable', () => {
+  it('rifiuta un download vuoto o molto più piccolo dello snapshot salvato', () => {
+    expect(isSnapshotReplaceable(0, 1500)).toBe(false);
+    expect(isSnapshotReplaceable(25, 1500)).toBe(false);
+    expect(isSnapshotReplaceable(1349, 1500)).toBe(false);
+  });
+
+  it('accetta download completi, più grandi o il primo download', () => {
+    expect(isSnapshotReplaceable(1350, 1500)).toBe(true);
+    expect(isSnapshotReplaceable(1600, 1500)).toBe(true);
+    expect(isSnapshotReplaceable(1500, 0)).toBe(true);
+    expect(isSnapshotReplaceable(0, 0)).toBe(false);
   });
 });
 

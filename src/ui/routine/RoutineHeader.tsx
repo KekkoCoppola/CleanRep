@@ -18,7 +18,7 @@ export default function RoutineHeader({
   step,
   routineName = 'Chest day',
   durationMinutes = 0,
-  selectedExerciseName = "Dumbell Incline",
+  selectedExerciseName = 'Personalizza',
   onBack,
   onEditName,
 }: Props) {
@@ -41,7 +41,7 @@ export default function RoutineHeader({
       {/* Logo Routine con la 'R' di CleanRep */}
       <div className="routine-brand-row">
         <img
-          src={`${import.meta.env.BASE_URL}assets/logo/CleanRep_R.svg`}
+          src={`${import.meta.env.BASE_URL}assets/logo/cleanrep-r-192.png`}
           alt="R"
           className="cleanrep-inline-r routine-brand-r"
         />
@@ -73,7 +73,7 @@ export default function RoutineHeader({
       )}
 
       {step === 'customize-exercise' && (
-        <div className="routine-step-subtitle">{selectedExerciseName}</div>
+        <div className="routine-step-subtitle routine-step-subtitle--clamp">{selectedExerciseName}</div>
       )}
     </header>
   );
