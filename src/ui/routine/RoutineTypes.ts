@@ -9,6 +9,22 @@ export type MuscleTarget =
   | 'abs'
   | 'legs';
 
+/**
+ * Esercizio del catalogo generato da ExerciseDB (scripts/build-exercise-catalog.ts).
+ */
+export interface CatalogExercise {
+  /** exerciseId ExerciseDB */
+  id: string;
+  /** Nome italiano da palestra (fallback: nameEn) */
+  name: string;
+  nameEn: string;
+  gifUrl: string;
+  primaryMuscles: MuscleTarget[];
+  equipment: string[];
+  /** Nota italiana degli ex preset, mostrata come placeholder */
+  notesPlaceholder?: string;
+}
+
 export interface PresetExercise {
   id: string;
   name: string;
