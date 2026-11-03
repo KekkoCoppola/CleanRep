@@ -25,6 +25,12 @@ export interface CatalogExercise {
   notesPlaceholder?: string;
 }
 
+/** Valori usati come placeholder nel form e salvati se il campo resta vuoto. */
+export const DEFAULT_SETS = 3;
+export const DEFAULT_REPS = '8-12';
+/** Solo esempio visivo: non viene mai salvato. */
+export const DEFAULT_NOTES_PLACEHOLDER = 'es. RPE 8, pausa 90s...';
+
 export interface PresetExercise {
   id: string;
   name: string;
