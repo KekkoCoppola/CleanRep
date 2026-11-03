@@ -26,3 +26,6 @@ Thumbs.db
 
 # APK copiato da build-apk.bat
 apk/
+
+# Anteprime visual companion (brainstorming)
+.superpowers/
