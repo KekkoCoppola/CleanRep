@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gymmy 3D Mascot Viewer - CleanRep</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0d0f12;
+      color: #f0f2f5;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    #header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 10;
+      background: linear-gradient(180deg, rgba(13,15,18,0.85) 0%, rgba(13,15,18,0) 100%);
+      pointer-events: none;
+    }
+    #header * { pointer-events: auto; }
+    .title-wrap h1 {
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .badge {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: rgba(0, 230, 118, 0.15);
+      color: #00e676;
+      border: 1px solid rgba(0, 230, 118, 0.4);
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: #8c93a0;
+      margin-top: 4px;
+    }
+    #canvas-container {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    #controls {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(22, 26, 32, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 10px 18px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      z-index: 10;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #f0f2f5;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+    .btn.active {
+      background: rgba(0, 230, 118, 0.2);
+      border-color: #00e676;
+      color: #00e676;
+    }
+    #info-panel {
+      position: absolute;
+      top: 80px;
+      right: 24px;
+      background: rgba(22, 26, 32, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 16px;
+      max-width: 280px;
+      font-size: 12px;
+      color: #a2a8b4;
+      line-height: 1.5;
+      z-index: 10;
+    }
+    #info-panel h3 {
+      font-size: 14px;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    #info-panel ul {
+      margin-left: 18px;
+    }
+    #info-panel li { margin-bottom: 4px; }
+    #loading-overlay {
+      position: absolute;
+      inset: 0;
+      background: #0d0f12;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      transition: opacity 0.4s;
+    }
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid rgba(0, 230, 118, 0.15);
+      border-top-color: #00e676;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+
+  <!-- Import Three.js & OrbitControls via ESM CDN -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="header">
+    <div class="title-wrap">
+      <h1>Gymmy 3D Mascot <span class="badge">Rigged & Animated</span></h1>
+      <div class="subtitle">Lontra atletica con fascia CleanRep • Ruota, zooma e ispeziona</div>
+    </div>
+  </div>
+
+  <div id="info-panel">
+    <h3>Caratteristiche Modello</h3>
+    <ul>
+      <li><strong>Fascia Atletica Nera</strong>: aderente al capo, con nodo e nastri posteriori.</li>
+      <li><strong>Logo CleanRep ("R")</strong>: stampato al centro della fronte.</li>
+      <li><strong>Rigging & Skeleton</strong>: 24 ossa (Head, Limbs, Spine, Tail).</li>
+      <li><strong>Pesi Skinning</strong>: 4 giunti per vertice.</li>
+      <li><strong>Dimensione</strong>: 2.25 MB (ottimizzato da 72 MB).</li>
+    </ul>
+  </div>
+
+  <div id="controls">
+    <button id="btn-anim" class="btn active">⏸ Pausa Animazione</button>
+    <button id="btn-bones" class="btn">🦴 Mostra Scheletro</button>
+    <button id="btn-head" class="btn">🔍 Zoom Fronte & Logo</button>
+    <button id="btn-reset" class="btn">↺ Reset Camera</button>
+  </div>
+
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+    <div id="loading-text" style="color: #8c93a0; font-size: 14px;">Caricamento Gymmy 3D...</div>
+  </div>
+
+  <div id="canvas-container"></div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+    const container = document.getElementById('canvas-container');
+    const loadingOverlay = document.getElementById('loading-overlay');
+
+    // 1. Scene & Camera
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0d0f12);
+
+    const camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.05, 100);
+    camera.position.set(0, 0.45, 1.4);
+
+    // 2. Renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.1;
+    container.appendChild(renderer.domElement);
+
+    // 3. OrbitControls
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.target.set(0, 0.32, 0);
+    controls.minDistance = 0.2;
+    controls.maxDistance = 5.0;
+
+    // 4. Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+    scene.add(ambientLight);
+
+    const keyLight = new THREE.DirectionalLight(0xfff5e6, 2.2);
+    keyLight.position.set(2, 3, 2);
+    scene.add(keyLight);
+
+    const fillLight = new THREE.DirectionalLight(0xddeeff, 1.2);
+    fillLight.position.set(-2, 1, 1.5);
+    scene.add(fillLight);
+
+    const rimLight = new THREE.DirectionalLight(0x00e676, 1.5); // CleanRep neon green rim light
+    rimLight.position.set(0, 2, -2);
+    scene.add(rimLight);
+
+    // Ground Grid subtle
+    const grid = new THREE.GridHelper(2, 20, 0x00e676, 0x22262e);
+    grid.position.y = 0;
+    scene.add(grid);
+
+    // 5. Load Gymmy Rigged GLB
+    let mixer = null;
+    let idleAction = null;
+    let skeletonHelper = null;
+    let model = null;
+
+    const loader = new GLTFLoader();
+    const modelUrl = 'assets/gymmy/gymmy.glb?v=' + Date.now();
+
+    loader.load(
+      modelUrl,
+      (gltf) => {
+        model = gltf.scene;
+        scene.add(model);
+
+        // Skeleton helper
+        skeletonHelper = new THREE.SkeletonHelper(model);
+        skeletonHelper.visible = false;
+        skeletonHelper.material.linewidth = 2;
+        scene.add(skeletonHelper);
+
+        // Animation mixer
+        if (gltf.animations && gltf.animations.length > 0) {
+          mixer = new THREE.AnimationMixer(model);
+          idleAction = mixer.clipAction(gltf.animations[0]);
+          idleAction.play();
+        }
+
+        loadingOverlay.style.opacity = '0';
+        setTimeout(() => loadingOverlay.style.display = 'none', 400);
+      },
+      (xhr) => {
+        if (xhr.total > 0) {
+          const pct = Math.round((xhr.loaded / xhr.total) * 100);
+          document.getElementById('loading-text').textContent = `Caricamento Gymmy 3D: ${pct}%`;
+        }
+      },
+      (err) => {
+        console.warn('Direct fetch failed (likely local file:// CORS), enabling file picker/drop:', err);
+        document.getElementById('loading-text').innerHTML = `
+          <div style="text-align: center; max-width: 320px;">
+            <p style="margin-bottom: 12px; color: #f0f2f5;">Trascina qui il file <strong>gymmy.glb</strong> oppure selezionalo:</p>
+            <label class="btn" style="display:inline-block; cursor:pointer;">
+              📁 Sfoglia file...
+              <input type="file" id="file-picker" accept=".glb,.gltf" style="display:none;">
+            </label>
+          </div>
+        `;
+        const picker = document.getElementById('file-picker');
+        if (picker) {
+          picker.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) loadLocalFile(file);
+          });
+        }
+      }
+    );
+
+    function loadLocalFile(file) {
+      const url = URL.createObjectURL(file);
+      loader.load(url, (gltf) => {
+        if (model) scene.remove(model);
+        model = gltf.scene;
+        scene.add(model);
+        if (skeletonHelper) scene.remove(skeletonHelper);
+        skeletonHelper = new THREE.SkeletonHelper(model);
+        skeletonHelper.visible = false;
+        scene.add(skeletonHelper);
+        if (gltf.animations && gltf.animations.length > 0) {
+          mixer = new THREE.AnimationMixer(model);
+          idleAction = mixer.clipAction(gltf.animations[0]);
+          idleAction.play();
+        }
+        loadingOverlay.style.opacity = '0';
+        setTimeout(() => loadingOverlay.style.display = 'none', 400);
+      });
+    }
+
+    // Drag and drop support
+    window.addEventListener('dragover', (e) => e.preventDefault());
+    window.addEventListener('drop', (e) => {
+      e.preventDefault();
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        loadLocalFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    // 6. UI Controls
+    let animPlaying = true;
+    const btnAnim = document.getElementById('btn-anim');
+    btnAnim.addEventListener('click', () => {
+      animPlaying = !animPlaying;
+      if (idleAction) {
+        idleAction.paused = !animPlaying;
+      }
+      btnAnim.textContent = animPlaying ? '⏸ Pausa Animazione' : '▶ Avvia Animazione';
+      btnAnim.classList.toggle('active', animPlaying);
+    });
+
+    const btnBones = document.getElementById('btn-bones');
+    btnBones.addEventListener('click', () => {
+      if (skeletonHelper) {
+        skeletonHelper.visible = !skeletonHelper.visible;
+        btnBones.classList.toggle('active', skeletonHelper.visible);
+      }
+    });
+
+    const btnHead = document.getElementById('btn-head');
+    btnHead.addEventListener('click', () => {
+      controls.target.set(0, 0.58, 0.08);
+      camera.position.set(0, 0.60, 0.45);
+      controls.update();
+    });
+
+    const btnReset = document.getElementById('btn-reset');
+    btnReset.addEventListener('click', () => {
+      controls.target.set(0, 0.32, 0);
+      camera.position.set(0, 0.45, 1.4);
+      controls.update();
+    });
+
+    // 7. Render Loop
+    const clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const delta = clock.getDelta();
+      if (mixer && animPlaying) {
+        mixer.update(delta);
+      }
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>
